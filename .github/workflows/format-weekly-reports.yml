@@ -1,0 +1,38 @@
+name: Format weekly reports UI
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'src/components/ReportsPage.tsx'
+      - 'src/themes/dashboard/index.css'
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Format report page
+        run: pnpm exec prettier --write src/components/ReportsPage.tsx src/themes/dashboard/index.css
+      - name: Commit formatting changes
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/ReportsPage.tsx src/themes/dashboard/index.css
+          git commit -m "Format weekly reports UI"
+          git push
