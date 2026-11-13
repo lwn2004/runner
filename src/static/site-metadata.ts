@@ -15,22 +15,18 @@ const getBasePath = () => {
 };
 
 const data: ISiteMetadataResult = {
-  siteTitle: 'Running Page',
-  siteUrl: 'https://yihong.run',
-  logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTtc69JxHNcmN1ETpMUX4dozAgAN6iPjWalQ&usqp=CAU',
-  description: 'Personal site and blog',
+  siteTitle: 'lwn2004 Running',
+  siteUrl: 'https://lwn2004.github.io/runner/',
+  logo: 'https://avatars.githubusercontent.com/u/28971635?v=4',
+  description: 'Personal running activity dashboard',
   navLinks: [
     {
       name: 'Summary',
       url: `${getBasePath()}/summary`,
     },
     {
-      name: 'Blog',
-      url: 'https://github.com/yihong0618/gitblog',
-    },
-    {
-      name: 'About',
-      url: 'https://github.com/yihong0618/running_page/blob/master/README-CN.md',
+      name: 'GitHub',
+      url: 'https://github.com/lwn2004/runner',
     },
   ],
 };
