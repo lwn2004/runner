@@ -274,7 +274,7 @@ class GpxCompiler:
                 if augment_timestamp:
                     point.time = start_date + timedelta(seconds=coord.time / 1000)
                 else:
-                    point.time = datetime.fromtimestamp(  # noqa: DTZ006
+                    point.time = datetime.fromtimestamp(
                         coord.time / 1000
                     )
             segment.points.append(point)
@@ -285,7 +285,7 @@ class GpxCompiler:
                 if poi.point.alt != poi.point.CONST_UNDEFINED:
                     wp.elevation = poi.point.alt
                 if poi.point.time != poi.point.CONST_UNDEFINED:
-                    wp.time = datetime.fromtimestamp(  # noqa: DTZ006
+                    wp.time = datetime.fromtimestamp(
                         poi.point.time / 1000
                     )
 
@@ -356,7 +356,7 @@ def is_tour_in_date_range(tour, start_date, end_date):
         return True  # If tour has no date info, include it
 
     tour_date_str = tour["date"][:10]  # Extract YYYY-MM-DD
-    tour_date = datetime.strptime(tour_date_str, "%Y-%m-%d").date()  # noqa: DTZ007
+    tour_date = datetime.strptime(tour_date_str, "%Y-%m-%d").date()
 
     # If only start_date is provided, include all tours on or after start_date
     if start_date and not end_date and tour_date < start_date:
@@ -448,7 +448,7 @@ def main(args):
     end_date = None
     if args.start_date:
         try:
-            start_date = datetime.strptime(  # noqa: DTZ007
+            start_date = datetime.strptime(
                 args.start_date, "%Y-%m-%d"
             ).date()
         except ValueError:
@@ -457,7 +457,7 @@ def main(args):
 
     if args.end_date:
         try:
-            end_date = datetime.strptime(  # noqa: DTZ007
+            end_date = datetime.strptime(
                 args.end_date, "%Y-%m-%d"
             ).date()
         except ValueError:
