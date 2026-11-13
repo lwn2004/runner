@@ -74,7 +74,7 @@ class MonthOfLifeDrawer(TracksDrawer):
             cy = offset.y + spacing_y * y_idx + spacing_y / 2
 
             current_date = datetime.datetime.now()
-            month_date = datetime.datetime(y, m, 1)  # noqa: DTZ001
+            month_date = datetime.datetime(y, m, 1)
             is_past = month_date < current_date
 
             color = "gray" if is_past else "#444444"
