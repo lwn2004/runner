@@ -45,7 +45,9 @@ const ReportsPage = lazy(() =>
 
 type Page = 'home' | 'tracks' | 'summary' | 'reports';
 const pageFromPath = (): Page => {
-  const path = window.location.pathname
+  const redirectedPath = sessionStorage.getItem('redirect');
+  if (redirectedPath) sessionStorage.removeItem('redirect');
+  const path = (redirectedPath || window.location.pathname)
     .slice(import.meta.env.BASE_URL.length)
     .replace(/\/$/, '');
   if (path === 'summary') return 'summary';
