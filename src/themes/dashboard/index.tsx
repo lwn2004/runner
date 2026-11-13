@@ -74,7 +74,7 @@ function Dashboard() {
     loadActivities();
   }, [loadActivities]);
   const { dark, toggle } = useTheme();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [filter] = useState('all' as const);
   const [year, setYear] = useState<number | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
@@ -173,7 +173,7 @@ function Dashboard() {
           >
             {activityDataError ? (
               <>
-                <p>Failed to load running data.</p>
+                <p>{locale === 'zh' ? '跑步数据加载失败。' : 'Failed to load running data.'}</p>
                 <button
                   className="rounded-md border border-[var(--color-border)] px-3 py-1.5"
                   onClick={() => {
@@ -182,7 +182,7 @@ function Dashboard() {
                     loadActivities();
                   }}
                 >
-                  Retry
+                  {locale === 'zh' ? '重试' : 'Retry'}
                 </button>
               </>
             ) : (
