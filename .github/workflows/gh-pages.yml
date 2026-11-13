@@ -64,7 +64,7 @@ jobs:
       # fallback activities.json (empty) would be used for a frontend-only push.
       - name: Cache Data Files
         if: inputs.save_data_in_github_cache || github.event_name == 'push'
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             activities
