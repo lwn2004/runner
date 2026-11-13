@@ -14,6 +14,7 @@ export interface RouteMapProps {
   selectedActivity?: Activity | null;
   dark?: boolean;
   onClearSelection?: () => void;
+  onRequestRoutes?: () => void;
 }
 
 const routeCache = new WeakMap<
