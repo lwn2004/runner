@@ -118,3 +118,83 @@ body {
 .dashboard .exporting .track-cell {
   content-visibility: visible;
 }
+
+
+.report-content {
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.report-content h1,
+.report-content h2,
+.report-content h3,
+.report-content h4 {
+  margin: 1.8em 0 0.7em;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.report-content h1 { font-size: 1.55rem; }
+.report-content h2 {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.45rem;
+  font-size: 1.3rem;
+}
+.report-content h3 { font-size: 1.1rem; }
+.report-content h4 { font-size: 1rem; }
+.report-content p { margin: 0.8em 0; }
+.report-content ul,
+.report-content ol {
+  margin: 0.8em 0;
+  padding-left: 1.6rem;
+}
+.report-content ul { list-style: disc; }
+.report-content ol { list-style: decimal; }
+.report-content li { margin: 0.35em 0; padding-left: 0.2rem; }
+.report-content strong { font-weight: 700; }
+.report-content em { font-style: italic; }
+.report-content a { color: var(--color-accent); text-decoration: underline; }
+.report-content blockquote {
+  margin: 1rem 0;
+  border-left: 3px solid var(--color-accent);
+  padding: 0.2rem 1rem;
+  color: var(--color-muted);
+}
+.report-content hr {
+  margin: 1.5rem 0;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+}
+.report-content code {
+  border-radius: 0.3rem;
+  background: var(--color-bg);
+  padding: 0.1rem 0.35rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+.report-content pre {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 0.6rem;
+  background: var(--color-bg);
+  padding: 1rem;
+}
+.report-table-wrap {
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+.report-content table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.report-content th,
+.report-content td {
+  border: 1px solid var(--color-border);
+  padding: 0.55rem 0.65rem;
+  text-align: left;
+  vertical-align: top;
+}
+.report-content th {
+  background: var(--color-bg);
+  font-weight: 650;
+}
