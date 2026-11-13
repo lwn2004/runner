@@ -13,7 +13,8 @@ import {
   useFilteredActivities,
   getAvailableYears,
   extractProvince,
-  getActivityData,
+  loadActivityData,
+  resetActivityData,
 } from '@/hooks/useActivities';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
@@ -58,7 +59,20 @@ const pageFromPath = (): Page => {
 
 function Dashboard() {
   const routeSectionRef = useRef<HTMLDivElement>(null);
-  const activities = getActivityData() as Activity[];
+  const [activityData, setActivityData] = useState<Activity[] | null>(null);
+  const [activityDataError, setActivityDataError] = useState(false);
+  const activities = activityData ?? [];
+
+  const loadActivities = useCallback(() => {
+    setActivityDataError(false);
+    loadActivityData()
+      .then(setActivityData)
+      .catch(() => setActivityDataError(true));
+  }, []);
+
+  useEffect(() => {
+    loadActivities();
+  }, [loadActivities]);
   const { dark, toggle } = useTheme();
   const { t } = useLocale();
   const [filter] = useState('all' as const);
@@ -152,7 +166,30 @@ function Dashboard() {
           </main>
         }
       >
-        {page === 'reports' ? (
+        {page !== 'reports' && activityData === null ? (
+          <main
+            className="mx-auto flex min-h-[60vh] max-w-[1400px] flex-col items-center justify-center gap-3 p-6 text-sm text-[var(--color-muted)]"
+            role="status"
+          >
+            {activityDataError ? (
+              <>
+                <p>Failed to load running data.</p>
+                <button
+                  className="rounded-md border border-[var(--color-border)] px-3 py-1.5"
+                  onClick={() => {
+                    resetActivityData();
+                    setActivityData(null);
+                    loadActivities();
+                  }}
+                >
+                  Retry
+                </button>
+              </>
+            ) : (
+              t('loading')
+            )}
+          </main>
+        ) : page === 'reports' ? (
           <ReportsPage />
         ) : page === 'summary' ? (
           <SummaryPage
