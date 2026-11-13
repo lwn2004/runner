@@ -40,9 +40,9 @@ export function RouteMapCanvas({
   const styleReadyRef = useRef(false);
   const cameraRef = useRef<mapboxgl.CameraOptions | null>(null);
   const fittedRef = useRef<unknown>(null);
-  const [provider, setProvider] = useState<'mapbox' | 'openfreemap' | 'carto'>(
-    MAPBOX_TOKEN ? 'mapbox' : 'openfreemap'
-  );
+  const [provider, setProvider] = useState<
+    'mapbox' | 'openfreemap' | 'carto'
+  >(MAPBOX_TOKEN ? 'mapbox' : 'openfreemap');
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
     'loading'
   );
@@ -62,8 +62,7 @@ export function RouteMapCanvas({
                   }/{z}/{x}/{y}.png`,
                 ],
                 tileSize: 256,
-                attribution:
-                  '© OpenStreetMap contributors © CARTO',
+                attribution: '© OpenStreetMap contributors © CARTO',
               },
             },
             layers: [
