@@ -17,7 +17,7 @@ const getBasePath = () => {
 const data: ISiteMetadataResult = {
   siteTitle: 'lwn2004 Running',
   siteUrl: 'https://lwn2004.github.io/runner/',
-  logo: 'https://avatars.githubusercontent.com/u/28971635?v=4',
+  logo: 'https://github.com/lwn2004.png',
   description: 'Personal running activity dashboard',
   navLinks: [
     {
