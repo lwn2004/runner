@@ -213,7 +213,7 @@ let activityDataCache: Activity[] | null = null;
 let activityDataError: unknown = null;
 let activityDataPromise: Promise<Activity[]> | null = null;
 
-const loadActivityData = () => {
+export const loadActivityData = () => {
   activityDataPromise ??= fetch(activitiesUrl)
     .then((response) => {
       if (!response.ok)
