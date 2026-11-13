@@ -14,6 +14,8 @@ import {
   getAvailableYears,
   extractProvince,
   loadActivityData,
+  loadRouteData,
+  mergeRouteData,
   resetActivityData,
 } from '@/hooks/useActivities';
 import { useTheme } from '@/hooks/useTheme';
@@ -61,6 +63,8 @@ function Dashboard() {
   const routeSectionRef = useRef<HTMLDivElement>(null);
   const [activityData, setActivityData] = useState<Activity[] | null>(null);
   const [activityDataError, setActivityDataError] = useState(false);
+  const [routeActivities, setRouteActivities] = useState<Activity[] | null>(null);
+  const [routeDataError, setRouteDataError] = useState(false);
   const activities = activityData ?? [];
 
   const loadActivities = useCallback(() => {
@@ -73,6 +77,14 @@ function Dashboard() {
   useEffect(() => {
     loadActivities();
   }, [loadActivities]);
+  const loadRoutes = useCallback(() => {
+    if (!activityData || routeActivities) return;
+    setRouteDataError(false);
+    loadRouteData()
+      .then((routes) => setRouteActivities(mergeRouteData(activityData, routes)))
+      .catch(() => setRouteDataError(true));
+  }, [activityData, routeActivities]);
+
   const { dark, toggle } = useTheme();
   const { t, locale } = useLocale();
   const [filter] = useState('all' as const);
@@ -82,6 +94,10 @@ function Dashboard() {
   );
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
   const [page, setPage] = useState<Page>(pageFromPath);
+
+  useEffect(() => {
+    if (page === 'tracks') loadRoutes();
+  }, [page, loadRoutes]);
 
   useEffect(() => {
     const onPopState = () => setPage(pageFromPath());
@@ -108,13 +124,18 @@ function Dashboard() {
   const filtered = useFilteredActivities(activities, filter, year);
   const heatmapYear = year ?? years[0] ?? currentYear;
 
-  // Activities filtered to the selected province (for RouteMap)
-  const provinceFiltered = useMemo(() => {
-    if (!selectedProvince) return filtered;
-    return filtered.filter(
-      (a) => extractProvince(a.location_country) === selectedProvince
-    );
-  }, [filtered, selectedProvince]);
+  // Join route geometry only after the user approaches the map or opens Tracks.
+  const routeFiltered = useMemo(() => {
+    if (!routeActivities) return [];
+    const filteredIds = new Set(filtered.map((activity) => activity.run_id));
+    const matching = routeActivities.filter((activity) => filteredIds.has(activity.run_id));
+    if (!selectedProvince) return matching;
+    return matching.filter((activity) => extractProvince(activity.location_country) === selectedProvince);
+  }, [routeActivities, filtered, selectedProvince]);
+
+  const selectedRouteActivity = selectedActivity
+    ? routeActivities?.find((activity) => activity.run_id === selectedActivity.run_id) ?? selectedActivity
+    : null;
 
   const selectActivity = useCallback(
     (activity: Activity | null) => {
@@ -201,16 +222,29 @@ function Dashboard() {
             }}
           />
         ) : page === 'tracks' ? (
-          <TracksPage
-            activities={activities}
-            dark={dark}
-            filter={filter}
-            onSelectActivity={selectActivity}
-            onBack={() => {
-              navigate('home');
-              window.scrollTo({ top: 0, behavior: 'instant' });
-            }}
-          />
+          routeActivities === null ? (
+            <main className="mx-auto flex min-h-[60vh] flex-col items-center justify-center gap-3 p-6 text-sm text-[var(--color-muted)]" role="status">
+              {routeDataError ? (
+                <>
+                  <p>{locale === 'zh' ? '路线数据加载失败。' : 'Failed to load route data.'}</p>
+                  <button className="rounded-md border border-[var(--color-border)] px-3 py-1.5" onClick={loadRoutes}>
+                    {locale === 'zh' ? '重试' : 'Retry'}
+                  </button>
+                </>
+              ) : t('loading')}
+            </main>
+          ) : (
+            <TracksPage
+              activities={routeActivities}
+              dark={dark}
+              filter={filter}
+              onSelectActivity={selectActivity}
+              onBack={() => {
+                navigate('home');
+                window.scrollTo({ top: 0, behavior: 'instant' });
+              }}
+            />
+          )
         ) : (
           <main className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 sm:py-6">
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_380px]">
@@ -255,9 +289,10 @@ function Dashboard() {
                 />
                 <div ref={routeSectionRef} className="scroll-mt-28">
                   <RouteMap
-                    activities={provinceFiltered}
-                    allActivities={activities}
-                    selectedActivity={selectedActivity}
+                    activities={routeFiltered}
+                    allActivities={routeActivities ?? []}
+                    selectedActivity={selectedRouteActivity}
+                    onRequestRoutes={loadRoutes}
                     dark={dark}
                     onClearSelection={() => setSelectedActivity(null)}
                   />
