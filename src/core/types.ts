@@ -8,7 +8,7 @@ export interface Activity {
   start_date: string;
   start_date_local: string;
   location_country: string | null;
-  summary_polyline: string | null;
+  summary_polyline?: string | null;
   average_heartrate: number | null;
   average_speed: number; // m/s
   elevation_gain: number | null;
