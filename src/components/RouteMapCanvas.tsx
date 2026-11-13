@@ -47,35 +47,60 @@ export function RouteMapCanvas({
     'loading'
   );
   const [retry, setRetry] = useState(0);
-  const style: string | mapboxgl.StyleSpecification =
-    provider === 'mapbox'
-      ? `mapbox://styles/mapbox/${dark === false ? 'light' : 'dark'}-v11`
+  const providerLabel =
+    provider === 'openfreemap'
+      ? zh
+        ? '底图 · OpenFreeMap'
+        : 'Basemap · OpenFreeMap'
       : provider === 'carto'
-        ? {
-            version: 8,
-            sources: {
-              carto: {
-                type: 'raster',
-                tiles: [
-                  `https://basemaps.cartocdn.com/rastertiles/${
-                    dark === false ? 'voyager' : 'dark_all'
-                  }/{z}/{x}/{y}.png`,
-                ],
-                tileSize: 256,
-                attribution: '© OpenStreetMap contributors © CARTO',
-              },
-            },
-            layers: [
-              {
-                id: 'carto-raster',
-                type: 'raster',
-                source: 'carto',
-              },
+        ? zh
+          ? '底图 · CARTO（备用）'
+          : 'Basemap · CARTO (fallback)'
+        : zh
+          ? '底图 · Mapbox'
+          : 'Basemap · Mapbox';
+  const statusLabel =
+    status === 'error'
+      ? zh
+        ? '底图加载失败，请重试'
+        : 'Basemap failed to load'
+      : status === 'loading'
+        ? zh
+          ? '正在加载地图…'
+          : 'Loading map…'
+        : providerLabel;
+  const style: string | mapboxgl.StyleSpecification = (() => {
+    if (provider === 'mapbox') {
+      return `mapbox://styles/mapbox/${dark === false ? 'light' : 'dark'}-v11`;
+    }
+    if (provider === 'carto') {
+      return {
+        version: 8,
+        sources: {
+          carto: {
+            type: 'raster',
+            tiles: [
+              `https://basemaps.cartocdn.com/rastertiles/${
+                dark === false ? 'voyager' : 'dark_all'
+              }/{z}/{x}/{y}.png`,
             ],
-          }
-        : `https://tiles.openfreemap.org/styles/${
-            dark === false ? 'bright' : 'dark'
-          }`;
+            tileSize: 256,
+            attribution: '© OpenStreetMap contributors © CARTO',
+          },
+        },
+        layers: [
+          {
+            id: 'carto-raster',
+            type: 'raster',
+            source: 'carto',
+          },
+        ],
+      };
+    }
+    return `https://tiles.openfreemap.org/styles/${
+      dark === false ? 'bright' : 'dark'
+    }`;
+  })();
 
   const displayActivity = useMemo(
     () =>
@@ -366,27 +391,7 @@ export function RouteMapCanvas({
         )}
       </div>
       <div className="route-map-footer">
-        <span role="status" aria-live="polite">
-          {status === 'error'
-            ? zh
-              ? '底图加载失败，请重试'
-              : 'Basemap failed to load'
-            : status === 'loading'
-              ? zh
-                ? '正在加载地图…'
-                : 'Loading map…'
-              : provider === 'openfreemap'
-                ? zh
-                  ? '底图 · OpenFreeMap'
-                  : 'Basemap · OpenFreeMap'
-                : provider === 'carto'
-                  ? zh
-                    ? '底图 · CARTO（备用）'
-                    : 'Basemap · CARTO (fallback)'
-                  : zh
-                    ? '底图 · Mapbox'
-                    : 'Basemap · Mapbox'}
-        </span>
+        <span role="status" aria-live="polite">{statusLabel}</span>
         {status === 'error' && (
           <button
             className="route-map-action"
