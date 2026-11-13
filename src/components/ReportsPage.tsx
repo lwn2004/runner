@@ -167,7 +167,7 @@ export function ReportsPage() {
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold tracking-[0.18em] text-[var(--color-accent)] uppercase">
-            Weekly review
+            Weekly running review
           </p>
           <h1 className="mt-2 text-2xl font-bold sm:text-3xl">
             {zh ? '跑步周报' : 'Running Reports'}
