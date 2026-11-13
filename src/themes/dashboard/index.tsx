@@ -37,18 +37,22 @@ const SummaryPage = lazy(() =>
     default: module.SummaryPage,
   }))
 );
+const ReportsPage = lazy(() =>
+  import('@/components/ReportsPage').then((module) => ({
+    default: module.ReportsPage,
+  }))
+);
 
-type Page = 'home' | 'tracks' | 'summary';
-const pageFromPath = (): Page =>
-  window.location.pathname
+type Page = 'home' | 'tracks' | 'summary' | 'reports';
+const pageFromPath = (): Page => {
+  const path = window.location.pathname
     .slice(import.meta.env.BASE_URL.length)
-    .replace(/\/$/, '') === 'summary'
-    ? 'summary'
-    : window.location.pathname
-          .slice(import.meta.env.BASE_URL.length)
-          .replace(/\/$/, '') === 'tracks'
-      ? 'tracks'
-      : 'home';
+    .replace(/\/$/, '');
+  if (path === 'summary') return 'summary';
+  if (path === 'tracks') return 'tracks';
+  if (path === 'reports') return 'reports';
+  return 'home';
+};
 
 function Dashboard() {
   const routeSectionRef = useRef<HTMLDivElement>(null);
@@ -146,7 +150,9 @@ function Dashboard() {
           </main>
         }
       >
-        {page === 'summary' ? (
+        {page === 'reports' ? (
+          <ReportsPage />
+        ) : page === 'summary' ? (
           <SummaryPage
             activities={activities}
             onSelectActivity={(activity) => {
