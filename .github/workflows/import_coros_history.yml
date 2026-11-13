@@ -1,0 +1,51 @@
+name: Import Historical COROS Data
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout runner
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Clone source repository
+        env:
+          GH_TOKEN: ${{ secrets.OLD_REPO_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "Missing OLD_REPO_TOKEN secret."
+            exit 1
+          fi
+          gh repo clone lwn2004/coros_run ../coros_run -- --depth 1
+
+      - name: Import database and FIT files
+        run: |
+          test -s ../coros_run/run_page/data.db
+          mkdir -p FIT_OUT
+          cp ../coros_run/run_page/data.db run_page/data.db
+          cp -a ../coros_run/FIT_OUT/. FIT_OUT/
+          echo "Database size:"
+          ls -lh run_page/data.db
+          echo "FIT file count:"
+          find FIT_OUT -type f -iname '*.fit' | wc -l
+          echo "FIT total size:"
+          du -sh FIT_OUT
+
+      - name: Commit imported history
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f run_page/data.db FIT_OUT/
+          if git diff --cached --quiet; then
+            echo "No historical data changes to commit."
+          else
+            git commit -m "Import historical COROS activities"
+            git push origin HEAD:master
+          fi
