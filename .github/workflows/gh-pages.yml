@@ -24,7 +24,7 @@ on:
       data_cache_prefix:
         required: true
         type: string
-        default: track_data
+        default: lwn2004_coros_v1
   workflow_call:
     inputs:
       save_data_in_github_cache:
