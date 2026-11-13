@@ -390,7 +390,9 @@ export function RouteMapCanvas({
         )}
       </div>
       <div className="route-map-footer">
-        <span role="status" aria-live="polite">{statusLabel}</span>
+        <span role="status" aria-live="polite">
+          {statusLabel}
+        </span>
         {status === 'error' && (
           <button
             className="route-map-action"
