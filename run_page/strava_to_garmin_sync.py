@@ -19,7 +19,7 @@ async def upload_to_activities(
     else:
         # is this startTimeGMT must have ?
         after_datetime_str = last_activity[0]["startTimeGMT"]
-        after_datetime = datetime.strptime(  # noqa: DTZ007
+        after_datetime = datetime.strptime(
             after_datetime_str, "%Y-%m-%d %H:%M:%S"
         )
         print("garmin last activity date: ", after_datetime)
