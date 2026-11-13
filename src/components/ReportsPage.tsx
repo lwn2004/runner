@@ -21,8 +21,8 @@ function escapeHtml(value: string) {
 function inlineMarkdown(value: string) {
   let html = escapeHtml(value);
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-  html = html.replaceAll('**', '<strong>');
-  html = html.replaceAll('*', '<em>');
+  html = html.replace(/\x2a\x2a(.+?)\x2a\x2a/g, '<strong>$1</strong>');
+  html = html.replace(/\x2a([^*]+)\x2a/g, '<em>$1</em>');
   html = html.replaceAll('[', '').replaceAll('](', ' — ').replaceAll(')', '');
   return html;
 }
