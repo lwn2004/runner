@@ -21,9 +21,9 @@ function escapeHtml(value: string) {
 function inlineMarkdown(value: string) {
   let html = escapeHtml(value);
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-  html = html.replace(/**(.+?)**/g, '<strong>$1</strong>');
-  html = html.replace(/*(.+?)*/g, '<em>$1</em>');
-  html = html.replace(/[(.+?)]((https?:\/\/[^\s)]+))/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  html = html.replaceAll('**', '<strong>');
+  html = html.replaceAll('*', '<em>');
+  html = html.replaceAll('[', '').replaceAll('](', ' — ').replaceAll(')', '');
   return html;
 }
 
