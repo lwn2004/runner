@@ -41,32 +41,29 @@ concurrency:
   group: 'pages'
   cancel-in-progress: true
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build_and_deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pages: write
       id-token: write
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
         with:
-          # if your default branches is not master, please change it here
           ref: master
           fetch-depth: 0
           persist-credentials: false
 
+      # Restore the personal activity data for both scheduled sync deployments
+      # and standalone frontend deployments. Without this, the checked-in
+      # fallback activities.json (empty) would be used for a frontend-only push.
       - name: Cache Data Files
-        if: inputs.save_data_in_github_cache
+        if: inputs.save_data_in_github_cache || github.event_name == 'push'
         uses: actions/cache@v4
         with:
           path: |
@@ -79,10 +76,10 @@ jobs:
             run_page/data.db
             src/static/activities.json
             imported.json
-          key: ${{ inputs.data_cache_prefix }}-${{ github.sha }}-${{ github.run_id }}
+          key: ${{ inputs.data_cache_prefix || 'track_data' }}-${{ github.sha }}-${{ github.run_id }}
           restore-keys: |
-            ${{ inputs.data_cache_prefix }}-${{ github.sha }}-
-            ${{ inputs.data_cache_prefix }}-
+            ${{ inputs.data_cache_prefix || 'track_data' }}-${{ github.sha }}-
+            ${{ inputs.data_cache_prefix || 'track_data' }}-
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
