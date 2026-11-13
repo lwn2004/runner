@@ -40,9 +40,9 @@ export function RouteMapCanvas({
   const styleReadyRef = useRef(false);
   const cameraRef = useRef<mapboxgl.CameraOptions | null>(null);
   const fittedRef = useRef<unknown>(null);
-  const [provider, setProvider] = useState<
-    'mapbox' | 'openfreemap' | 'carto'
-  >(MAPBOX_TOKEN ? 'mapbox' : 'openfreemap');
+  const [provider, setProvider] = useState<'mapbox' | 'openfreemap' | 'carto'>(
+    MAPBOX_TOKEN ? 'mapbox' : 'openfreemap'
+  );
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
     'loading'
   );
@@ -256,8 +256,7 @@ export function RouteMapCanvas({
     const map = mapRef.current;
     if (!map) return;
     let failed = false;
-    const onError = (event: mapboxgl.ErrorEvent) => {
-      const code = (event.error as Error & { status?: number }).status;
+    const onError = () => {
       // Progressively fall back to providers that do not require an API key.
       // The final CARTO raster fallback avoids vector glyph/style dependencies.
       if (provider === 'mapbox') {
