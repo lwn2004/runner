@@ -99,12 +99,22 @@ jobs:
           VITE_MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
         run: PATH_PREFIX=/$REPO_NAME pnpm build
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Package Pages artifact
+        run: |
+          tar \
+            --dereference --hard-dereference \
+            --directory "./dist" \
+            -cvf "$RUNNER_TEMP/artifact.tar" \
+            --exclude=.git \
+            --exclude=.github \
+            .
+      - name: Upload Pages artifact
+        uses: actions/upload-artifact@v4
         with:
-          # Upload dist repository
           name: pages-artifact-${{ github.run_id }}-${{ github.run_attempt }}
-          path: './dist'
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
+          if-no-files-found: error
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
