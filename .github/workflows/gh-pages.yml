@@ -103,6 +103,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+      - name: Split activity summaries and route geometry
+        run: python3 run_page/split_activity_data.py
+
       - name: Build
         env:
           REPO_NAME: ${{ github.event.repository.name }}
