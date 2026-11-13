@@ -73,7 +73,7 @@ class MonthOfLifeDrawer(TracksDrawer):
             cx = offset.x + spacing_x * x_idx + spacing_x / 2
             cy = offset.y + spacing_y * y_idx + spacing_y / 2
 
-            current_date = datetime.datetime.now()  # noqa: DTZ005
+            current_date = datetime.datetime.now()
             month_date = datetime.datetime(y, m, 1)  # noqa: DTZ001
             is_past = month_date < current_date
 
