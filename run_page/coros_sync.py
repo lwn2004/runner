@@ -222,3 +222,5 @@ if __name__ == "__main__":
     asyncio.run(
         download_and_generate(account, encrypted_pwd, is_only_running, file_type)
     )
+
+# Keep the COROS sync workflow triggerable when deployment configuration changes.
