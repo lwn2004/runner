@@ -48,7 +48,9 @@ export function RouteMapCanvas({
   const style =
     provider === 'mapbox'
       ? `mapbox://styles/mapbox/${dark === false ? 'light' : 'dark'}-v11`
-      : `https://tiles.openfreemap.org/styles/${dark === false ? 'bright' : 'dark'}`;
+      : `https://tiles.openfreemap.org/styles/${
+          dark === false ? 'bright' : 'dark'
+        }`;
 
   const displayActivity = useMemo(
     () =>
