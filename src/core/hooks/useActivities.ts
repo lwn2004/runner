@@ -207,11 +207,13 @@ export function getAvailableYears(activities: Activity[]): number[] {
 }
 
 // Async data loading (fetch-based, compatible with Suspense)
-import activitiesUrl from '@/static/activities.json?url';
+import activitiesUrl from '@/static/activities-summary.json?url';
+import routesUrl from '@/static/activity-routes.json?url';
 
 let activityDataCache: Activity[] | null = null;
 let activityDataError: unknown = null;
 let activityDataPromise: Promise<Activity[]> | null = null;
+let routeDataPromise: Promise<Map<number, string>> | null = null;
 
 export const loadActivityData = () => {
   activityDataPromise ??= fetch(activitiesUrl)
@@ -231,6 +233,27 @@ export const loadActivityData = () => {
   return activityDataPromise;
 };
 
+export const loadRouteData = () => {
+  routeDataPromise ??= fetch(routesUrl)
+    .then((response) => {
+      if (!response.ok) throw new Error('Failed to load activity routes: ' + response.status);
+      return response.json() as Promise<[number, string][]>;
+    })
+    .then((entries) => new Map(entries))
+    .catch((error: unknown) => {
+      routeDataPromise = null;
+      throw error;
+    });
+  return routeDataPromise;
+};
+
+export function mergeRouteData(activities: Activity[], routes: Map<number, string>): Activity[] {
+  return activities.map((activity) => {
+    const summary_polyline = routes.get(activity.run_id);
+    return summary_polyline ? { ...activity, summary_polyline } : activity;
+  });
+}
+
 export const getActivityData = () => {
   if (activityDataError) throw activityDataError;
   if (activityDataCache) return activityDataCache;
@@ -242,4 +265,5 @@ export function resetActivityData() {
   activityDataCache = null;
   activityDataError = null;
   activityDataPromise = null;
+  routeDataPromise = null;
 }
