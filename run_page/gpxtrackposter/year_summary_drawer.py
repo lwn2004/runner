@@ -289,7 +289,7 @@ class YearSummaryDrawer(TracksDrawer):
                 and isinstance(t.end_time, datetime.datetime)
                 and isinstance(t.start_time, datetime.datetime)
             ):
-                    total_time_s += (t.end_time - t.start_time).total_seconds()
+                total_time_s += (t.end_time - t.start_time).total_seconds()
 
         stats["total_distance"] = self.poster.m2u(total_distance_m)
         stats["total_time"] = total_time_s
