@@ -13,7 +13,7 @@ mapbox_token: ''
 # ── 外观 ─────────────────────────────────────────────────────────────────────
 
 # 头像 URL（支持本地路径或远程图片链接）
-avatar: 'https://avatars.githubusercontent.com/u/28971635?v=4'
+avatar: 'https://github.com/lwn2004.png'
 
 # 默认语言：zh（中文）| en（英文）
 locale: zh
