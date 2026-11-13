@@ -40,19 +40,43 @@ export function RouteMapCanvas({
   const styleReadyRef = useRef(false);
   const cameraRef = useRef<mapboxgl.CameraOptions | null>(null);
   const fittedRef = useRef<unknown>(null);
-  const [provider, setProvider] = useState(
+  const [provider, setProvider] = useState<'mapbox' | 'openfreemap' | 'carto'>(
     MAPBOX_TOKEN ? 'mapbox' : 'openfreemap'
   );
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
     'loading'
   );
   const [retry, setRetry] = useState(0);
-  const style =
+  const style: string | mapboxgl.StyleSpecification =
     provider === 'mapbox'
       ? `mapbox://styles/mapbox/${dark === false ? 'light' : 'dark'}-v11`
-      : `https://tiles.openfreemap.org/styles/${
-          dark === false ? 'bright' : 'dark'
-        }`;
+      : provider === 'carto'
+        ? {
+            version: 8,
+            sources: {
+              carto: {
+                type: 'raster',
+                tiles: [
+                  `https://basemaps.cartocdn.com/rastertiles/${
+                    dark === false ? 'voyager' : 'dark_all'
+                  }/{z}/{x}/{y}.png`,
+                ],
+                tileSize: 256,
+                attribution:
+                  '© OpenStreetMap contributors © CARTO',
+              },
+            },
+            layers: [
+              {
+                id: 'carto-raster',
+                type: 'raster',
+                source: 'carto',
+              },
+            ],
+          }
+        : `https://tiles.openfreemap.org/styles/${
+            dark === false ? 'bright' : 'dark'
+          }`;
 
   const displayActivity = useMemo(
     () =>
@@ -210,8 +234,12 @@ export function RouteMapCanvas({
     let failed = false;
     const onError = (event: mapboxgl.ErrorEvent) => {
       const code = (event.error as Error & { status?: number }).status;
-      if (provider === 'mapbox' && (code === 401 || code === 403)) {
+      // Progressively fall back to providers that do not require an API key.
+      // The final CARTO raster fallback avoids vector glyph/style dependencies.
+      if (provider === 'mapbox') {
         setProvider('openfreemap');
+      } else if (provider === 'openfreemap') {
+        setProvider('carto');
       } else {
         failed = true;
         setStatus('error');
@@ -231,7 +259,11 @@ export function RouteMapCanvas({
       localIdeographFontFamily: 'sans-serif',
     });
     const timer = window.setTimeout(() => {
-      if (!map.isStyleLoaded()) setStatus('error');
+      if (!map.isStyleLoaded()) {
+        if (provider === 'mapbox') setProvider('openfreemap');
+        else if (provider === 'openfreemap') setProvider('carto');
+        else setStatus('error');
+      }
     }, 15000);
     return () => {
       window.clearTimeout(timer);
@@ -348,25 +380,24 @@ export function RouteMapCanvas({
                 ? zh
                   ? '底图 · OpenFreeMap'
                   : 'Basemap · OpenFreeMap'
-                : zh
-                  ? '底图 · Mapbox'
-                  : 'Basemap · Mapbox'}
+                : provider === 'carto'
+                  ? zh
+                    ? '底图 · CARTO（备用）'
+                    : 'Basemap · CARTO (fallback)'
+                  : zh
+                    ? '底图 · Mapbox'
+                    : 'Basemap · Mapbox'}
         </span>
-        {(status === 'error' || (provider === 'carto' && !!MAPBOX_TOKEN)) && (
+        {status === 'error' && (
           <button
             className="route-map-action"
             onClick={() => {
-              setProvider(MAPBOX_TOKEN ? 'mapbox' : 'carto');
+              setStatus('loading');
+              setProvider(MAPBOX_TOKEN ? 'mapbox' : 'openfreemap');
               setRetry((value) => value + 1);
             }}
           >
-            {provider === 'carto' && MAPBOX_TOKEN
-              ? zh
-                ? '重试 Mapbox'
-                : 'Retry Mapbox'
-              : zh
-                ? '重试'
-                : 'Retry'}
+            {zh ? '重试地图' : 'Retry map'}
           </button>
         )}
       </div>
