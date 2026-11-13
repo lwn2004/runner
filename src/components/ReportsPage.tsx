@@ -41,7 +41,8 @@ function renderMarkdown(markdown: string) {
     if (line.startsWith('```')) {
       const code: string[] = [];
       i++;
-      while (i < lines.length && !lines[i].startsWith('```')) code.push(lines[i++]);
+      while (i < lines.length && !lines[i].startsWith('```'))
+        code.push(lines[i++]);
       i++;
       output.push(`<pre><code>${escapeHtml(code.join('\n'))}</code></pre>`);
       continue;
@@ -60,36 +61,70 @@ function renderMarkdown(markdown: string) {
     }
     if (line.startsWith('>')) {
       const quote: string[] = [];
-      while (i < lines.length && lines[i].startsWith('>')) quote.push(inlineMarkdown(lines[i++].replace(/^>\s?/, '')));
-      output.push(`<blockquote>${quote.map((v) => `<p>${v}</p>`).join('')}</blockquote>`);
+      while (i < lines.length && lines[i].startsWith('>'))
+        quote.push(inlineMarkdown(lines[i++].replace(/^>\s?/, '')));
+      output.push(
+        `<blockquote>${quote.map((v) => `<p>${v}</p>`).join('')}</blockquote>`
+      );
       continue;
     }
-    if (line.includes('|') && i + 1 < lines.length && /^\s*\|?\s*:?-{3,}/.test(lines[i + 1])) {
-      const cells = (value: string) => value.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((cell) => cell.trim());
+    if (
+      line.includes('|') &&
+      i + 1 < lines.length &&
+      /^\s*\|?\s*:?-{3,}/.test(lines[i + 1])
+    ) {
+      const cells = (value: string) =>
+        value
+          .trim()
+          .replace(/^\|/, '')
+          .replace(/\|$/, '')
+          .split('|')
+          .map((cell) => cell.trim());
       const headers = cells(line);
       i += 2;
       const rows: string[] = [];
       while (i < lines.length && lines[i].includes('|')) {
-        rows.push(`<tr>${cells(lines[i++]).map((cell) => `<td>${inlineMarkdown(cell)}</td>`).join('')}</tr>`);
+        rows.push(
+          `<tr>${cells(lines[i++])
+            .map((cell) => `<td>${inlineMarkdown(cell)}</td>`)
+            .join('')}</tr>`
+        );
       }
-      output.push(`<div class="report-table-wrap"><table><thead><tr>${headers.map((cell) => `<th>${inlineMarkdown(cell)}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`);
+      output.push(
+        `<div class="report-table-wrap"><table><thead><tr>${headers.map((cell) => `<th>${inlineMarkdown(cell)}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`
+      );
       continue;
     }
     if (/^\s*[-*]\s+/.test(line)) {
       const items: string[] = [];
-      while (i < lines.length && /^\s*[-*]\s+/.test(lines[i])) items.push(`<li>${inlineMarkdown(lines[i++].replace(/^\s*[-*]\s+/, ''))}</li>`);
+      while (i < lines.length && /^\s*[-*]\s+/.test(lines[i]))
+        items.push(
+          `<li>${inlineMarkdown(lines[i++].replace(/^\s*[-*]\s+/, ''))}</li>`
+        );
       output.push(`<ul>${items.join('')}</ul>`);
       continue;
     }
     if (/^\s*\d+\.\s+/.test(line)) {
       const items: string[] = [];
-      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) items.push(`<li>${inlineMarkdown(lines[i++].replace(/^\s*\d+\.\s+/, ''))}</li>`);
+      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i]))
+        items.push(
+          `<li>${inlineMarkdown(lines[i++].replace(/^\s*\d+\.\s+/, ''))}</li>`
+        );
       output.push(`<ol>${items.join('')}</ol>`);
       continue;
     }
     const paragraph = [line.trim()];
     i++;
-    while (i < lines.length && lines[i].trim() && !/^(#{1,4})\s|^>|^\s*[-*]\s+|^\s*\d+\.\s+|^---+$/.test(lines[i]) && !(lines[i].includes('|') && i + 1 < lines.length && /^\s*\|?\s*:?-{3,}/.test(lines[i + 1]))) {
+    while (
+      i < lines.length &&
+      lines[i].trim() &&
+      !/^(#{1,4})\s|^>|^\s*[-*]\s+|^\s*\d+\.\s+|^---+$/.test(lines[i]) &&
+      !(
+        lines[i].includes('|') &&
+        i + 1 < lines.length &&
+        /^\s*\|?\s*:?-{3,}/.test(lines[i + 1])
+      )
+    ) {
       paragraph.push(lines[i++].trim());
     }
     output.push(`<p>${inlineMarkdown(paragraph.join(' '))}</p>`);
@@ -153,7 +188,8 @@ export function ReportsPage() {
         }
       })
       .catch((reason: unknown) => {
-        if (active) setError(reason instanceof Error ? reason.message : String(reason));
+        if (active)
+          setError(reason instanceof Error ? reason.message : String(reason));
       });
     return () => {
       active = false;
@@ -173,7 +209,9 @@ export function ReportsPage() {
             {zh ? '跑步周报' : 'Running Reports'}
           </h1>
           <p className="mt-2 text-sm text-[var(--color-muted)]">
-            {zh ? '来自每周 COROS 训练复盘的完整报告' : 'Full reports from the weekly COROS training review'}
+            {zh
+              ? '来自每周 COROS 训练复盘的完整报告'
+              : 'Full reports from the weekly COROS training review'}
           </p>
         </div>
         {reports.length > 0 && (
@@ -185,7 +223,9 @@ export function ReportsPage() {
               className="rounded-lg border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-[var(--color-text)]"
             >
               {reports.map((item) => (
-                <option key={item.date} value={item.date}>{item.date}</option>
+                <option key={item.date} value={item.date}>
+                  {item.date}
+                </option>
               ))}
             </select>
           </label>
@@ -196,18 +236,26 @@ export function ReportsPage() {
         <div className={panel}>{zh ? '正在加载周报…' : 'Loading reports…'}</div>
       ) : error ? (
         <div className={panel}>
-          <p className="font-semibold">{zh ? '周报加载失败' : 'Unable to load report'}</p>
+          <p className="font-semibold">
+            {zh ? '周报加载失败' : 'Unable to load report'}
+          </p>
           <p className="mt-2 text-sm text-[var(--color-muted)]">{error}</p>
         </div>
       ) : !reports.length ? (
-        <div className={panel}>{zh ? '还没有周报。下一次周报生成后会显示在这里。' : 'No reports yet. New weekly reviews will appear here.'}</div>
+        <div className={panel}>
+          {zh
+            ? '还没有周报。下一次周报生成后会显示在这里。'
+            : 'No reports yet. New weekly reviews will appear here.'}
+        </div>
       ) : (
         <article className={`${panel} report-content`}>
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border)] pb-4">
             <div>
               <h2 className="text-lg font-semibold">{selected}</h2>
               <p className="mt-1 text-xs text-[var(--color-muted)]">
-                {zh ? '每周跑步复盘 · 汕头马拉松 3:30' : 'Weekly running review · Shantou Marathon 3:30'}
+                {zh
+                  ? '每周跑步复盘 · 汕头马拉松 3:30'
+                  : 'Weekly running review · Shantou Marathon 3:30'}
               </p>
             </div>
             {current && (
