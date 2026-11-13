@@ -40,67 +40,15 @@ export function RouteMapCanvas({
   const styleReadyRef = useRef(false);
   const cameraRef = useRef<mapboxgl.CameraOptions | null>(null);
   const fittedRef = useRef<unknown>(null);
-  const [provider, setProvider] = useState<'mapbox' | 'openfreemap' | 'carto'>(
-    MAPBOX_TOKEN ? 'mapbox' : 'openfreemap'
-  );
+  const [provider, setProvider] = useState(MAPBOX_TOKEN ? 'mapbox' : 'carto');
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
     'loading'
   );
   const [retry, setRetry] = useState(0);
-  const providerLabel =
-    provider === 'openfreemap'
-      ? zh
-        ? '底图 · OpenFreeMap'
-        : 'Basemap · OpenFreeMap'
-      : provider === 'carto'
-        ? zh
-          ? '底图 · CARTO（备用）'
-          : 'Basemap · CARTO (fallback)'
-        : zh
-          ? '底图 · Mapbox'
-          : 'Basemap · Mapbox';
-  const statusLabel =
-    status === 'error'
-      ? zh
-        ? '底图加载失败，请重试'
-        : 'Basemap failed to load'
-      : status === 'loading'
-        ? zh
-          ? '正在加载地图…'
-          : 'Loading map…'
-        : providerLabel;
-  const style: string | mapboxgl.StyleSpecification = (() => {
-    if (provider === 'mapbox') {
-      return `mapbox://styles/mapbox/${dark === false ? 'light' : 'dark'}-v11`;
-    }
-    if (provider === 'carto') {
-      return {
-        version: 8,
-        sources: {
-          carto: {
-            type: 'raster',
-            tiles: [
-              `https://basemaps.cartocdn.com/rastertiles/${
-                dark === false ? 'voyager' : 'dark_all'
-              }/{z}/{x}/{y}.png`,
-            ],
-            tileSize: 256,
-            attribution: '© OpenStreetMap contributors © CARTO',
-          },
-        },
-        layers: [
-          {
-            id: 'carto-raster',
-            type: 'raster',
-            source: 'carto',
-          },
-        ],
-      };
-    }
-    return `https://tiles.openfreemap.org/styles/${
-      dark === false ? 'bright' : 'dark'
-    }`;
-  })();
+  const style =
+    provider === 'mapbox'
+      ? `mapbox://styles/mapbox/${dark === false ? 'light' : 'dark'}-v11`
+      : `https://basemaps.cartocdn.com/gl/${dark === false ? 'positron' : 'dark-matter'}-gl-style/style.json`;
 
   const displayActivity = useMemo(
     () =>
@@ -256,12 +204,9 @@ export function RouteMapCanvas({
     const map = mapRef.current;
     if (!map) return;
     let failed = false;
-    const onError = () => {
-      // Progressively fall back to providers that do not require an API key.
-      // The final CARTO raster fallback avoids vector glyph/style dependencies.
-      if (provider === 'mapbox') {
-        setProvider('openfreemap');
-      } else if (provider === 'openfreemap') {
+    const onError = (event: mapboxgl.ErrorEvent) => {
+      const code = (event.error as Error & { status?: number }).status;
+      if (provider === 'mapbox' && (code === 401 || code === 403)) {
         setProvider('carto');
       } else {
         failed = true;
@@ -282,11 +227,7 @@ export function RouteMapCanvas({
       localIdeographFontFamily: 'sans-serif',
     });
     const timer = window.setTimeout(() => {
-      if (!map.isStyleLoaded()) {
-        if (provider === 'mapbox') setProvider('openfreemap');
-        else if (provider === 'openfreemap') setProvider('carto');
-        else setStatus('error');
-      }
+      if (!map.isStyleLoaded()) setStatus('error');
     }, 15000);
     return () => {
       window.clearTimeout(timer);
@@ -391,18 +332,31 @@ export function RouteMapCanvas({
       </div>
       <div className="route-map-footer">
         <span role="status" aria-live="polite">
-          {statusLabel}
+          {status === 'error'
+            ? zh
+              ? '底图加载失败，请重试'
+              : 'Basemap failed to load'
+            : status === 'loading'
+              ? zh
+                ? '正在加载地图…'
+                : 'Loading map…'
+              : provider === 'carto'
+                ? zh
+                  ? '备用底图 · CARTO'
+                  : 'Alternative basemap · CARTO'
+                : zh
+                  ? '底图 · Mapbox'
+                  : 'Basemap · Mapbox'}
         </span>
         {status === 'error' && (
           <button
             className="route-map-action"
             onClick={() => {
-              setStatus('loading');
-              setProvider(MAPBOX_TOKEN ? 'mapbox' : 'openfreemap');
+              setProvider(MAPBOX_TOKEN ? 'mapbox' : 'carto');
               setRetry((value) => value + 1);
             }}
           >
-            {zh ? '重试地图' : 'Retry map'}
+            {zh ? '重试' : 'Retry'}
           </button>
         )}
       </div>
