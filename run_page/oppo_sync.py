@@ -272,9 +272,7 @@ def get_all_oppo_tracks(
         0
         if (last_track_date == 0)
         else int(
-            datetime.timestamp(
-                datetime.strptime(last_track_date, "%Y-%m-%d %H:%M:%S")
-            )
+            datetime.timestamp(datetime.strptime(last_track_date, "%Y-%m-%d %H:%M:%S"))
             * 1000
         )
     )
