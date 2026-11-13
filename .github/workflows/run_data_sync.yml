@@ -28,7 +28,6 @@ on:
       - run_page/oppo_sync.py
       - run_page/intervals_icu_sync.py
       - requirements.txt
-      - .github/workflows/gh-pages.yml
 
 env:
   # please change to your own config.
