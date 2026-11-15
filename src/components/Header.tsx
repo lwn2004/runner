@@ -1,7 +1,7 @@
 import type { Activity } from '../types';
 import { useLocale } from '../hooks/useLocale';
 
-type Page = 'home' | 'tracks' | 'summary' | 'reports';
+type Page = 'home' | 'tracks' | 'summary';
 
 interface HeaderProps {
   dark: boolean;
@@ -18,7 +18,6 @@ export function Header({ dark, toggleTheme, page, onNavigate }: HeaderProps) {
     { label: t('home'), page: 'home' },
     { label: t('tracks'), page: 'tracks' },
     { label: t('summary'), page: 'summary' },
-    { label: locale === 'zh' ? '周报' : 'Reports', page: 'reports' },
   ];
 
   return (
@@ -112,7 +111,7 @@ export function Header({ dark, toggleTheme, page, onNavigate }: HeaderProps) {
             {locale === 'zh' ? 'EN' : '中'}
           </button>
           <a
-            href="https://github.com/lwn2004/runner"
+            href="https://github.com/yihong0618/running_page"
             target="_blank"
             rel="noopener noreferrer"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-muted)] transition-colors hover:bg-[var(--color-card)] hover:text-[var(--color-text)]"

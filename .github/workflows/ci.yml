@@ -1,5 +1,4 @@
 name: CI
-# Re-run CI after Ruff fixes.
 
 on: [push, pull_request]
 

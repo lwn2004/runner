@@ -14,7 +14,6 @@ export interface RouteMapProps {
   selectedActivity?: Activity | null;
   dark?: boolean;
   onClearSelection?: () => void;
-  onRequestRoutes?: () => void;
 }
 
 const routeCache = new WeakMap<
@@ -349,7 +348,7 @@ export function RouteMapCanvas({
                   ? '底图 · Mapbox'
                   : 'Basemap · Mapbox'}
         </span>
-        {status === 'error' && (
+        {(status === 'error' || (provider === 'carto' && !!MAPBOX_TOKEN)) && (
           <button
             className="route-map-action"
             onClick={() => {
@@ -357,7 +356,13 @@ export function RouteMapCanvas({
               setRetry((value) => value + 1);
             }}
           >
-            {zh ? '重试' : 'Retry'}
+            {provider === 'carto' && MAPBOX_TOKEN
+              ? zh
+                ? '重试 Mapbox'
+                : 'Retry Mapbox'
+              : zh
+                ? '重试'
+                : 'Retry'}
           </button>
         )}
       </div>

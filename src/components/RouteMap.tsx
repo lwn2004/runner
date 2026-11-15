@@ -13,7 +13,6 @@ export function RouteMap(props: RouteMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   const { locale } = useLocale();
-  const selectedRunId = props.selectedActivity?.run_id;
   useEffect(() => {
     const element = containerRef.current;
     if (!element) return;
@@ -29,10 +28,6 @@ export function RouteMap(props: RouteMapProps) {
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
-  useEffect(() => {
-    if (visible || selectedRunId !== undefined) props.onRequestRoutes?.();
-  }, [visible, selectedRunId, props.onRequestRoutes]);
-
   const placeholder = (
     <div
       className="flex h-[442px] items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] text-sm text-[var(--color-muted)]"

@@ -13,10 +13,7 @@ import {
   useFilteredActivities,
   getAvailableYears,
   extractProvince,
-  loadActivityData,
-  loadRouteData,
-  mergeRouteData,
-  resetActivityData,
+  getActivityData,
 } from '@/hooks/useActivities';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
@@ -40,53 +37,24 @@ const SummaryPage = lazy(() =>
     default: module.SummaryPage,
   }))
 );
-const ReportsPage = lazy(() =>
-  import('@/components/ReportsPage').then((module) => ({
-    default: module.ReportsPage,
-  }))
-);
 
-type Page = 'home' | 'tracks' | 'summary' | 'reports';
-const pageFromPath = (): Page => {
-  const redirectedPath = sessionStorage.getItem('redirect');
-  if (redirectedPath) sessionStorage.removeItem('redirect');
-  const path = (redirectedPath || window.location.pathname)
+type Page = 'home' | 'tracks' | 'summary';
+const pageFromPath = (): Page =>
+  window.location.pathname
     .slice(import.meta.env.BASE_URL.length)
-    .replace(/\/$/, '');
-  if (path === 'summary') return 'summary';
-  if (path === 'tracks') return 'tracks';
-  if (path === 'reports') return 'reports';
-  return 'home';
-};
+    .replace(/\/$/, '') === 'summary'
+    ? 'summary'
+    : window.location.pathname
+          .slice(import.meta.env.BASE_URL.length)
+          .replace(/\/$/, '') === 'tracks'
+      ? 'tracks'
+      : 'home';
 
 function Dashboard() {
   const routeSectionRef = useRef<HTMLDivElement>(null);
-  const [activityData, setActivityData] = useState<Activity[] | null>(null);
-  const [activityDataError, setActivityDataError] = useState(false);
-  const [routeActivities, setRouteActivities] = useState<Activity[] | null>(null);
-  const [routeDataError, setRouteDataError] = useState(false);
-  const activities = activityData ?? [];
-
-  const loadActivities = useCallback(() => {
-    setActivityDataError(false);
-    loadActivityData()
-      .then(setActivityData)
-      .catch(() => setActivityDataError(true));
-  }, []);
-
-  useEffect(() => {
-    loadActivities();
-  }, [loadActivities]);
-  const loadRoutes = useCallback(() => {
-    if (!activityData || routeActivities) return;
-    setRouteDataError(false);
-    loadRouteData()
-      .then((routes) => setRouteActivities(mergeRouteData(activityData, routes)))
-      .catch(() => setRouteDataError(true));
-  }, [activityData, routeActivities]);
-
+  const activities = getActivityData() as Activity[];
   const { dark, toggle } = useTheme();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const [filter] = useState('all' as const);
   const [year, setYear] = useState<number | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
@@ -94,10 +62,6 @@ function Dashboard() {
   );
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
   const [page, setPage] = useState<Page>(pageFromPath);
-
-  useEffect(() => {
-    if (page === 'tracks') loadRoutes();
-  }, [page, loadRoutes]);
 
   useEffect(() => {
     const onPopState = () => setPage(pageFromPath());
@@ -124,18 +88,13 @@ function Dashboard() {
   const filtered = useFilteredActivities(activities, filter, year);
   const heatmapYear = year ?? years[0] ?? currentYear;
 
-  // Join route geometry only after the user approaches the map or opens Tracks.
-  const routeFiltered = useMemo(() => {
-    if (!routeActivities) return [];
-    const filteredIds = new Set(filtered.map((activity) => activity.run_id));
-    const matching = routeActivities.filter((activity) => filteredIds.has(activity.run_id));
-    if (!selectedProvince) return matching;
-    return matching.filter((activity) => extractProvince(activity.location_country) === selectedProvince);
-  }, [routeActivities, filtered, selectedProvince]);
-
-  const selectedRouteActivity = selectedActivity
-    ? routeActivities?.find((activity) => activity.run_id === selectedActivity.run_id) ?? selectedActivity
-    : null;
+  // Activities filtered to the selected province (for RouteMap)
+  const provinceFiltered = useMemo(() => {
+    if (!selectedProvince) return filtered;
+    return filtered.filter(
+      (a) => extractProvince(a.location_country) === selectedProvince
+    );
+  }, [filtered, selectedProvince]);
 
   const selectActivity = useCallback(
     (activity: Activity | null) => {
@@ -187,32 +146,7 @@ function Dashboard() {
           </main>
         }
       >
-        {page !== 'reports' && activityData === null ? (
-          <main
-            className="mx-auto flex min-h-[60vh] max-w-[1400px] flex-col items-center justify-center gap-3 p-6 text-sm text-[var(--color-muted)]"
-            role="status"
-          >
-            {activityDataError ? (
-              <>
-                <p>{locale === 'zh' ? '跑步数据加载失败。' : 'Failed to load running data.'}</p>
-                <button
-                  className="rounded-md border border-[var(--color-border)] px-3 py-1.5"
-                  onClick={() => {
-                    resetActivityData();
-                    setActivityData(null);
-                    loadActivities();
-                  }}
-                >
-                  {locale === 'zh' ? '重试' : 'Retry'}
-                </button>
-              </>
-            ) : (
-              t('loading')
-            )}
-          </main>
-        ) : page === 'reports' ? (
-          <ReportsPage />
-        ) : page === 'summary' ? (
+        {page === 'summary' ? (
           <SummaryPage
             activities={activities}
             onSelectActivity={(activity) => {
@@ -222,29 +156,16 @@ function Dashboard() {
             }}
           />
         ) : page === 'tracks' ? (
-          routeActivities === null ? (
-            <main className="mx-auto flex min-h-[60vh] flex-col items-center justify-center gap-3 p-6 text-sm text-[var(--color-muted)]" role="status">
-              {routeDataError ? (
-                <>
-                  <p>{locale === 'zh' ? '路线数据加载失败。' : 'Failed to load route data.'}</p>
-                  <button className="rounded-md border border-[var(--color-border)] px-3 py-1.5" onClick={loadRoutes}>
-                    {locale === 'zh' ? '重试' : 'Retry'}
-                  </button>
-                </>
-              ) : t('loading')}
-            </main>
-          ) : (
-            <TracksPage
-              activities={routeActivities}
-              dark={dark}
-              filter={filter}
-              onSelectActivity={selectActivity}
-              onBack={() => {
-                navigate('home');
-                window.scrollTo({ top: 0, behavior: 'instant' });
-              }}
-            />
-          )
+          <TracksPage
+            activities={activities}
+            dark={dark}
+            filter={filter}
+            onSelectActivity={selectActivity}
+            onBack={() => {
+              navigate('home');
+              window.scrollTo({ top: 0, behavior: 'instant' });
+            }}
+          />
         ) : (
           <main className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 sm:py-6">
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_380px]">
@@ -289,10 +210,9 @@ function Dashboard() {
                 />
                 <div ref={routeSectionRef} className="scroll-mt-28">
                   <RouteMap
-                    activities={routeFiltered}
-                    allActivities={routeActivities ?? []}
-                    selectedActivity={selectedRouteActivity}
-                    onRequestRoutes={loadRoutes}
+                    activities={provinceFiltered}
+                    allActivities={activities}
+                    selectedActivity={selectedActivity}
                     dark={dark}
                     onClearSelection={() => setSelectedActivity(null)}
                   />
