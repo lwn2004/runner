@@ -1,3 +1,5 @@
+import { useLocale } from '../hooks/useLocale';
+
 type Page = 'home' | 'tracks' | 'summary' | 'ai-review' | 'prediction';
 
 interface HeaderProps {
