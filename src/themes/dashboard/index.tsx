@@ -28,16 +28,24 @@ import { PersonalBest } from '@/components/PersonalBest';
 import { ChinaMap } from '@/components/ChinaMap';
 
 const TracksPage = lazy(() =>
-  import('@/components/TracksPage').then((module) => ({ default: module.TracksPage }))
+  import('@/components/TracksPage').then((module) => ({
+    default: module.TracksPage,
+  }))
 );
 const SummaryPage = lazy(() =>
-  import('@/components/SummaryPage').then((module) => ({ default: module.SummaryPage }))
+  import('@/components/SummaryPage').then((module) => ({
+    default: module.SummaryPage,
+  }))
 );
 const AIReviewPage = lazy(() =>
-  import('@/components/AIReviewPage').then((module) => ({ default: module.AIReviewPage }))
+  import('@/components/AIReviewPage').then((module) => ({
+    default: module.AIReviewPage,
+  }))
 );
 const PredictionPage = lazy(() =>
-  import('@/components/PredictionPage').then((module) => ({ default: module.PredictionPage }))
+  import('@/components/PredictionPage').then((module) => ({
+    default: module.PredictionPage,
+  }))
 );
 
 type Page = 'home' | 'tracks' | 'summary' | 'ai-review' | 'prediction';
@@ -45,7 +53,8 @@ const pageFromPath = (): Page => {
   const path = window.location.pathname
     .slice(import.meta.env.BASE_URL.length)
     .replace(/\/$/, '');
-  if (['tracks', 'summary', 'ai-review', 'prediction'].includes(path)) return path as Page;
+  if (['tracks', 'summary', 'ai-review', 'prediction'].includes(path))
+    return path as Page;
   return 'home';
 };
 
@@ -56,7 +65,9 @@ function Dashboard() {
   const { t } = useLocale();
   const [filter] = useState('all' as const);
   const [year, setYear] = useState<number | null>(null);
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
+    null
+  );
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
   const [page, setPage] = useState<Page>(pageFromPath);
 
@@ -88,33 +99,50 @@ function Dashboard() {
 
   const provinceFiltered = useMemo(() => {
     if (!selectedProvince) return filtered;
-    return filtered.filter((a) => extractProvince(a.location_country) === selectedProvince);
+    return filtered.filter(
+      (a) => extractProvince(a.location_country) === selectedProvince
+    );
   }, [filtered, selectedProvince]);
 
-  const selectActivity = useCallback((activity: Activity | null) => {
-    setSelectedActivity(activity);
-    if (activity) {
-      setSelectedProvince(null);
-      if (window.matchMedia('(max-width: 1023px)').matches) {
-        requestAnimationFrame(() =>
-          routeSectionRef.current?.scrollIntoView({
-            block: 'start',
-            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
-          })
-        );
+  const selectActivity = useCallback(
+    (activity: Activity | null) => {
+      setSelectedActivity(activity);
+      if (activity) {
+        setSelectedProvince(null);
+        if (window.matchMedia('(max-width: 1023px)').matches) {
+          requestAnimationFrame(() =>
+            routeSectionRef.current?.scrollIntoView({
+              block: 'start',
+              behavior: window.matchMedia('(prefers-reduced-motion: reduce)')
+                .matches
+                ? 'instant'
+                : 'smooth',
+            })
+          );
+        }
+        if (
+          year !== null &&
+          new Date(activity.start_date_local).getFullYear() !== year
+        ) {
+          setYear(new Date(activity.start_date_local).getFullYear());
+        }
       }
-      if (year !== null && new Date(activity.start_date_local).getFullYear() !== year) {
-        setYear(new Date(activity.start_date_local).getFullYear());
-      }
-    }
-  }, [year]);
+    },
+    [year]
+  );
 
   return (
-    <div className="dashboard min-h-screen bg-[var(--color-bg)]" data-filter={filter}>
+    <div
+      className="dashboard min-h-screen bg-[var(--color-bg)]"
+      data-filter={filter}
+    >
       <Header page={page} onNavigate={navigate} />
       <Suspense
         fallback={
-          <main className="mx-auto flex min-h-[60vh] max-w-[1400px] items-center justify-center p-6 text-sm text-[var(--color-muted)]" role="status">
+          <main
+            className="mx-auto flex min-h-[60vh] max-w-[1400px] items-center justify-center p-6 text-sm text-[var(--color-muted)]"
+            role="status"
+          >
             {t('loading')}
           </main>
         }
@@ -144,8 +172,19 @@ function Dashboard() {
           <main className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 sm:py-6">
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_380px]">
               <div className="min-w-0 space-y-6 overflow-hidden">
-                <StatsCards activities={filtered} allActivities={activities} year={year} filter={filter} onSelectActivity={selectActivity} />
-                <ContributionHeatmap activities={activities} year={heatmapYear} filter={filter} onSelectActivity={selectActivity} />
+                <StatsCards
+                  activities={filtered}
+                  allActivities={activities}
+                  year={year}
+                  filter={filter}
+                  onSelectActivity={selectActivity}
+                />
+                <ContributionHeatmap
+                  activities={activities}
+                  year={heatmapYear}
+                  filter={filter}
+                  onSelectActivity={selectActivity}
+                />
                 <ActivityLog
                   activities={filtered}
                   years={years}
@@ -162,7 +201,12 @@ function Dashboard() {
               </div>
               <div className="flex min-w-0 flex-col gap-6 overflow-hidden">
                 <ProfileCard activities={activities} filter={filter} />
-                <ChinaMap activities={filtered} filter={filter} selectedProvince={selectedProvince} onSelectProvince={selectProvince} />
+                <ChinaMap
+                  activities={filtered}
+                  filter={filter}
+                  selectedProvince={selectedProvince}
+                  onSelectProvince={selectProvince}
+                />
                 <div ref={routeSectionRef} className="scroll-mt-28">
                   <RouteMap
                     activities={provinceFiltered}
@@ -172,8 +216,16 @@ function Dashboard() {
                     onClearSelection={() => setSelectedActivity(null)}
                   />
                 </div>
-                <PersonalBest activities={activities} onSelectActivity={selectActivity} />
-                <CalendarWidget key={year ?? 'all'} selectedActivity={selectedActivity} activities={filtered} onSelectActivity={selectActivity} />
+                <PersonalBest
+                  activities={activities}
+                  onSelectActivity={selectActivity}
+                />
+                <CalendarWidget
+                  key={year ?? 'all'}
+                  selectedActivity={selectedActivity}
+                  activities={filtered}
+                  onSelectActivity={selectActivity}
+                />
               </div>
             </div>
           </main>

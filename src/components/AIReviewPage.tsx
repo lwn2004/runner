@@ -5,13 +5,22 @@ interface ReportEntry {
   report: string;
 }
 
-const INDEX_URL = 'https://raw.githubusercontent.com/lwn2004/coros_run/master/public/data/summary/index.json';
-const REPORT_BASE = 'https://raw.githubusercontent.com/lwn2004/coros_run/master/public/data/summary/';
+const INDEX_URL =
+  'https://raw.githubusercontent.com/lwn2004/coros_run/master/public/data/summary/index.json';
+const REPORT_BASE =
+  'https://raw.githubusercontent.com/lwn2004/coros_run/master/public/data/summary/';
 
 function escapeHtml(value: string) {
-  return value.replace(/[&<>"]/g, (char) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;',
-  })[char] || char);
+  return value.replace(
+    /[&<>"]/g,
+    (char) =>
+      ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+      })[char] || char
+  );
 }
 
 function inlineMarkdown(value: string) {
@@ -19,7 +28,10 @@ function inlineMarkdown(value: string) {
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    .replace(
+      /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+    );
 }
 
 function markdownToHtml(markdown: string) {
@@ -30,7 +42,8 @@ function markdownToHtml(markdown: string) {
   let tableRows: string[][] = [];
 
   const flushParagraph = () => {
-    if (paragraph.length) output.push(`<p>${inlineMarkdown(paragraph.join(' '))}</p>`);
+    if (paragraph.length)
+      output.push(`<p>${inlineMarkdown(paragraph.join(' '))}</p>`);
     paragraph = [];
   };
   const flushList = () => {
@@ -39,11 +52,22 @@ function markdownToHtml(markdown: string) {
   };
   const flushTable = () => {
     if (!tableRows.length) return;
-    const rows = tableRows.filter((row) => !row.every((cell) => /^:?-{3,}:?$/.test(cell.trim())));
+    const rows = tableRows.filter(
+      (row) => !row.every((cell) => /^:?-{3,}:?$/.test(cell.trim()))
+    );
     if (rows.length) {
       output.push('<div class="report-table-wrap"><table><tbody>');
       rows.forEach((row, index) => {
-        output.push('<tr>' + row.map((cell) => `<${index === 0 ? 'th' : 'td'}>${inlineMarkdown(cell.trim())}</${index === 0 ? 'th' : 'td'}>`).join('') + '</tr>');
+        output.push(
+          '<tr>' +
+            row
+              .map(
+                (cell) =>
+                  `<${index === 0 ? 'th' : 'td'}>${inlineMarkdown(cell.trim())}</${index === 0 ? 'th' : 'td'}>`
+              )
+              .join('') +
+            '</tr>'
+        );
       });
       output.push('</tbody></table></div>');
     }
@@ -53,35 +77,61 @@ function markdownToHtml(markdown: string) {
   for (const line of lines) {
     const trimmed = line.trim();
     if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
-      flushParagraph(); flushList();
+      flushParagraph();
+      flushList();
       tableRows.push(trimmed.slice(1, -1).split('|'));
       continue;
     }
     flushTable();
-    if (!trimmed) { flushParagraph(); flushList(); continue; }
+    if (!trimmed) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
     const heading = trimmed.match(/^(#{1,4})\s+(.+)$/);
     if (heading) {
-      flushParagraph(); flushList();
+      flushParagraph();
+      flushList();
       const level = heading[1].length;
       output.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
     } else if (/^---+$/.test(trimmed)) {
-      flushParagraph(); flushList(); output.push('<hr />');
+      flushParagraph();
+      flushList();
+      output.push('<hr />');
     } else if (/^>\s?/.test(trimmed)) {
-      flushParagraph(); flushList();
-      output.push(`<blockquote>${inlineMarkdown(trimmed.replace(/^>\s?/, ''))}</blockquote>`);
+      flushParagraph();
+      flushList();
+      output.push(
+        `<blockquote>${inlineMarkdown(trimmed.replace(/^>\s?/, ''))}</blockquote>`
+      );
     } else if (/^[-*]\s+/.test(trimmed)) {
       flushParagraph();
-      if (listType !== 'ul') { flushList(); listType = 'ul'; output.push('<ul>'); }
-      output.push(`<li>${inlineMarkdown(trimmed.replace(/^[-*]\s+/, ''))}</li>`);
+      if (listType !== 'ul') {
+        flushList();
+        listType = 'ul';
+        output.push('<ul>');
+      }
+      output.push(
+        `<li>${inlineMarkdown(trimmed.replace(/^[-*]\s+/, ''))}</li>`
+      );
     } else if (/^\d+\.\s+/.test(trimmed)) {
       flushParagraph();
-      if (listType !== 'ol') { flushList(); listType = 'ol'; output.push('<ol>'); }
-      output.push(`<li>${inlineMarkdown(trimmed.replace(/^\d+\.\s+/, ''))}</li>`);
+      if (listType !== 'ol') {
+        flushList();
+        listType = 'ol';
+        output.push('<ol>');
+      }
+      output.push(
+        `<li>${inlineMarkdown(trimmed.replace(/^\d+\.\s+/, ''))}</li>`
+      );
     } else {
-      flushList(); paragraph.push(trimmed);
+      flushList();
+      paragraph.push(trimmed);
     }
   }
-  flushParagraph(); flushList(); flushTable();
+  flushParagraph();
+  flushList();
+  flushTable();
   return output.join('\n');
 }
 
@@ -97,18 +147,23 @@ export function AIReviewPage() {
     const controller = new AbortController();
     fetch(INDEX_URL, { signal: controller.signal, cache: 'no-cache' })
       .then((response) => {
-        if (!response.ok) throw new Error(`索引加载失败（HTTP ${response.status}）`);
+        if (!response.ok)
+          throw new Error(`索引加载失败（HTTP ${response.status}）`);
         return response.json() as Promise<ReportEntry[]>;
       })
       .then((items) => {
-        const valid = items.filter((item) => item.date && item.report).sort((a, b) => b.date.localeCompare(a.date));
+        const valid = items
+          .filter((item) => item.date && item.report)
+          .sort((a, b) => b.date.localeCompare(a.date));
         setReports(valid);
         setLoadingIndex(false);
         if (!valid.length) setError('暂时没有 AI 复盘报告。');
       })
       .catch((reason: unknown) => {
         if (reason instanceof Error && reason.name === 'AbortError') return;
-        setError(reason instanceof Error ? reason.message : '无法加载报告索引。');
+        setError(
+          reason instanceof Error ? reason.message : '无法加载报告索引。'
+        );
         setLoadingIndex(false);
       });
     return () => controller.abort();
@@ -119,47 +174,81 @@ export function AIReviewPage() {
     const controller = new AbortController();
     setLoadingReport(true);
     setMarkdown('');
-    fetch(new URL(reports[selected].report, REPORT_BASE), { signal: controller.signal, cache: 'no-cache' })
+    fetch(new URL(reports[selected].report, REPORT_BASE), {
+      signal: controller.signal,
+      cache: 'no-cache',
+    })
       .then((response) => {
-        if (!response.ok) throw new Error(`报告加载失败（HTTP ${response.status}）`);
+        if (!response.ok)
+          throw new Error(`报告加载失败（HTTP ${response.status}）`);
         return response.text();
       })
       .then(setMarkdown)
       .catch((reason: unknown) => {
         if (reason instanceof Error && reason.name === 'AbortError') return;
-        setError(reason instanceof Error ? reason.message : '无法加载报告内容。');
+        setError(
+          reason instanceof Error ? reason.message : '无法加载报告内容。'
+        );
       })
       .finally(() => setLoadingReport(false));
     return () => controller.abort();
   }, [reports, selected]);
 
   const html = useMemo(() => markdownToHtml(markdown), [markdown]);
-  const panel = 'rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] p-5 sm:p-7';
+  const panel =
+    'rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] p-5 sm:p-7';
 
   return (
     <main className="mx-auto max-w-[1100px] px-4 py-6 sm:px-6">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">每周 AI 跑步复盘</h1>
-          <p className="mt-2 text-sm text-[var(--color-muted)]">来自 COROS 训练数据与每周 ChatGPT 复盘报告</p>
+          <p className="mt-2 text-sm text-[var(--color-muted)]">
+            来自 COROS 训练数据与每周 ChatGPT 复盘报告
+          </p>
         </div>
         {!loadingIndex && reports.length > 0 && (
           <div className="flex items-center gap-2">
-            <label htmlFor="report-date" className="text-sm text-[var(--color-muted)]">报告日期</label>
-            <select id="report-date" className="rounded-lg border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm" value={selected} onChange={(event) => setSelected(Number(event.target.value))}>
-              {reports.map((report, index) => <option key={report.date} value={index}>{report.date}</option>)}
+            <label
+              htmlFor="report-date"
+              className="text-sm text-[var(--color-muted)]"
+            >
+              报告日期
+            </label>
+            <select
+              id="report-date"
+              className="rounded-lg border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm"
+              value={selected}
+              onChange={(event) => setSelected(Number(event.target.value))}
+            >
+              {reports.map((report, index) => (
+                <option key={report.date} value={index}>
+                  {report.date}
+                </option>
+              ))}
             </select>
           </div>
         )}
       </div>
-      {error && <div role="alert" className={`${panel} mb-4 text-sm text-rose-400`}>{error}</div>}
+      {error && (
+        <div role="alert" className={`${panel} mb-4 text-sm text-rose-400`}>
+          {error}
+        </div>
+      )}
       <article className={panel}>
         {loadingIndex || loadingReport ? (
-          <p className="py-12 text-center text-sm text-[var(--color-muted)]">正在加载复盘报告…</p>
+          <p className="py-12 text-center text-sm text-[var(--color-muted)]">
+            正在加载复盘报告…
+          </p>
         ) : markdown ? (
-          <div className="ai-report-content" dangerouslySetInnerHTML={{ __html: html }} />
+          <div
+            className="ai-report-content"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
         ) : (
-          <p className="py-12 text-center text-sm text-[var(--color-muted)]">暂无可显示的报告。</p>
+          <p className="py-12 text-center text-sm text-[var(--color-muted)]">
+            暂无可显示的报告。
+          </p>
         )}
       </article>
       <style>{`

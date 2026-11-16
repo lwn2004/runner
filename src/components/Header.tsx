@@ -29,7 +29,10 @@ export function Header({ page, onNavigate }: HeaderProps) {
         >
           RUNNING<span className="text-[var(--color-run)]">.</span>PAGE
         </button>
-        <nav aria-label="主导航" className="flex flex-wrap items-center gap-3 sm:gap-6">
+        <nav
+          aria-label="主导航"
+          className="flex flex-wrap items-center gap-3 sm:gap-6"
+        >
           {navItems.map((item) => (
             <button
               aria-current={item.page === page ? 'page' : undefined}
