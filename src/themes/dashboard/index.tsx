@@ -37,23 +37,31 @@ const SummaryPage = lazy(() =>
     default: module.SummaryPage,
   }))
 );
+const AIReviewPage = lazy(() =>
+  import('@/components/AIReviewPage').then((module) => ({
+    default: module.AIReviewPage,
+  }))
+);
+const PredictionPage = lazy(() =>
+  import('@/components/PredictionPage').then((module) => ({
+    default: module.PredictionPage,
+  }))
+);
 
-type Page = 'home' | 'tracks' | 'summary';
-const pageFromPath = (): Page =>
-  window.location.pathname
+type Page = 'home' | 'tracks' | 'summary' | 'ai-review' | 'prediction';
+const pageFromPath = (): Page => {
+  const path = window.location.pathname
     .slice(import.meta.env.BASE_URL.length)
-    .replace(/\/$/, '') === 'summary'
-    ? 'summary'
-    : window.location.pathname
-          .slice(import.meta.env.BASE_URL.length)
-          .replace(/\/$/, '') === 'tracks'
-      ? 'tracks'
-      : 'home';
+    .replace(/\/$/, '');
+  if (['tracks', 'summary', 'ai-review', 'prediction'].includes(path))
+    return path as Page;
+  return 'home';
+};
 
 function Dashboard() {
   const routeSectionRef = useRef<HTMLDivElement>(null);
   const activities = getActivityData() as Activity[];
-  const { dark, toggle } = useTheme();
+  const { dark } = useTheme();
   const { t } = useLocale();
   const [filter] = useState('all' as const);
   const [year, setYear] = useState<number | null>(null);
@@ -68,6 +76,7 @@ function Dashboard() {
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
+
   const navigate = (next: Page) => {
     window.history.pushState(
       null,
@@ -88,7 +97,6 @@ function Dashboard() {
   const filtered = useFilteredActivities(activities, filter, year);
   const heatmapYear = year ?? years[0] ?? currentYear;
 
-  // Activities filtered to the selected province (for RouteMap)
   const provinceFiltered = useMemo(() => {
     if (!selectedProvince) return filtered;
     return filtered.filter(
@@ -128,14 +136,7 @@ function Dashboard() {
       className="dashboard min-h-screen bg-[var(--color-bg)]"
       data-filter={filter}
     >
-      <Header
-        dark={dark}
-        toggleTheme={toggle}
-        activities={activities}
-        page={page}
-        onNavigate={navigate}
-      />
-
+      <Header page={page} onNavigate={navigate} />
       <Suspense
         fallback={
           <main
@@ -155,21 +156,21 @@ function Dashboard() {
               selectActivity(activity);
             }}
           />
+        ) : page === 'ai-review' ? (
+          <AIReviewPage />
+        ) : page === 'prediction' ? (
+          <PredictionPage activities={activities} />
         ) : page === 'tracks' ? (
           <TracksPage
             activities={activities}
             dark={dark}
             filter={filter}
             onSelectActivity={selectActivity}
-            onBack={() => {
-              navigate('home');
-              window.scrollTo({ top: 0, behavior: 'instant' });
-            }}
+            onBack={() => navigate('home')}
           />
         ) : (
           <main className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 sm:py-6">
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_380px]">
-              {/* Left column */}
               <div className="min-w-0 space-y-6 overflow-hidden">
                 <StatsCards
                   activities={filtered}
@@ -198,8 +199,6 @@ function Dashboard() {
                   filter={filter}
                 />
               </div>
-
-              {/* Right column */}
               <div className="flex min-w-0 flex-col gap-6 overflow-hidden">
                 <ProfileCard activities={activities} filter={filter} />
                 <ChinaMap
@@ -232,7 +231,6 @@ function Dashboard() {
           </main>
         )}
       </Suspense>
-
       <footer className="border-t border-[var(--color-border)] py-6 text-center text-sm text-[var(--color-muted)]">
         &copy; {currentYear} Running Page 3.0
       </footer>

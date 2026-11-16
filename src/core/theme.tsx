@@ -6,22 +6,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { DEFAULT_THEME } from './config';
 
 export type ThemeMode = 'light' | 'dark';
-
-const STORAGE_KEY = 'theme';
-
-function resolveTheme(fallback: ThemeMode | 'system' = 'dark'): ThemeMode {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === 'light' || stored === 'dark') return stored;
-  if (fallback === 'system') {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light';
-  }
-  return fallback === 'light' ? 'light' : 'dark';
-}
 
 function applyTheme(theme: ThemeMode) {
   const root = document.documentElement;
@@ -29,7 +15,7 @@ function applyTheme(theme: ThemeMode) {
   root.classList.add(theme);
   root.setAttribute('data-theme', theme);
   root.style.colorScheme = theme;
-  localStorage.setItem(STORAGE_KEY, theme);
+  localStorage.setItem('theme', theme);
 }
 
 type ThemeContextValue = {
@@ -42,20 +28,18 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<ThemeMode>(() =>
-    resolveTheme(DEFAULT_THEME)
-  );
+  const [theme, setTheme] = useState<ThemeMode>('dark');
 
   useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+    applyTheme('dark');
+  }, []);
 
   const value = useMemo<ThemeContextValue>(
     () => ({
       theme,
-      setTheme,
-      dark: theme === 'dark',
-      toggle: () => setTheme((t) => (t === 'dark' ? 'light' : 'dark')),
+      setTheme: () => setTheme('dark'),
+      dark: true,
+      toggle: () => setTheme('dark'),
     }),
     [theme]
   );
