@@ -120,16 +120,34 @@ export function PredictionPage({ activities }: { activities: Activity[] }) {
       });
     }
 
-    const recentPoints = dailyRows
-      .filter((row) => {
-        const age = todayMs - dateAtNoon(row.date).getTime();
-        return age >= 0 && age <= 56 * DAY;
-      })
-      .map((row) => ({
-        pace: row.duration / row.distance / 60,
-        dailyKm: row.distance / 8,
+    const recentRows = dailyRows.filter((row) => {
+      const age = todayMs - dateAtNoon(row.date).getTime();
+      return age >= 0 && age <= 56 * DAY;
+    });
+    const recentPoints = recentRows.map((row) => ({
+      pace: row.duration / row.distance / 60,
+      dailyKm: row.distance,
+      date: row.date,
+    }));
+    const progression = recentRows.map((row) => {
+      const targetMs = dateAtNoon(row.date).getTime();
+      let distance = 0;
+      let duration = 0;
+      for (let age = 0; age < 56; age++) {
+        const day = new Date(targetMs - age * DAY);
+        const date = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+        const past = daily.get(date);
+        if (past) {
+          distance += past.distance;
+          duration += past.duration;
+        }
+      }
+      return {
+        pace: duration / distance / 60,
+        dailyKm: distance / 56,
         date: row.date,
-      }));
+      };
+    }).filter((point) => point.dailyKm > 0 && Number.isFinite(point.pace));
 
     const targets = [
       { label: '2:45', seconds: 9900 },
@@ -155,7 +173,7 @@ export function PredictionPage({ activities }: { activities: Activity[] }) {
           point.dailyKm !== null && point.dailyKm > 0 && point.dailyKm <= 40
       ),
     }));
-    return { weeklyKm, paceSeconds, predicted, trend, recentPoints, contours };
+    return { weeklyKm, paceSeconds, predicted, trend, recentPoints, progression, contours };
   }, [activities]);
 
   return (
@@ -316,10 +334,19 @@ export function PredictionPage({ activities }: { activities: Activity[] }) {
                     isAnimationActive={false}
                   />
                 ))}
+                <Line
+                  data={result.progression}
+                  dataKey="dailyKm"
+                  name="8 周均值路径"
+                  stroke="var(--color-accent)"
+                  strokeWidth={1.5}
+                  dot={{ r: 2 }}
+                  isAnimationActive={false}
+                />
                 <Scatter
                   data={result.recentPoints}
                   dataKey="dailyKm"
-                  name="最近 8 周训练"
+                  name="单日训练"
                   fill="var(--color-accent)"
                 />
               </ComposedChart>
