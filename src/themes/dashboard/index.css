@@ -121,7 +121,7 @@ body {
 
 /* Mobile-only homepage card order and compact presentation. */
 @media (max-width: 1023px) {
-  .activity-log-card.mobile-collapsed > div:not(:first-child) {
+  .activity-log-card.mobile-collapsed > :not(:first-child) {
     display: none;
   }
 
