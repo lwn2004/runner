@@ -118,3 +118,26 @@ body {
 .dashboard .exporting .track-cell {
   content-visibility: visible;
 }
+
+/* Mobile-only homepage card order and compact presentation. */
+@media (max-width: 1023px) {
+  .activity-log-card.mobile-collapsed > :not(:first-child) {
+    display: none;
+  }
+
+  .mobile-home-profile-card > div > div:nth-child(2) {
+    display: none;
+  }
+
+  .mobile-home-route-map .route-map-header,
+  .mobile-home-route-map .route-map-footer,
+  .mobile-home-route-map .route-map > p {
+    display: none;
+  }
+
+  .mobile-home-route-map .route-map-body,
+  .mobile-home-route-map > div > [role='status'] {
+    height: 320px;
+    min-height: 240px;
+  }
+}

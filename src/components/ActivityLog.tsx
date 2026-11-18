@@ -11,6 +11,7 @@ interface ActivityLogProps {
   selectedActivity?: Activity | null;
   onSelectActivity?: (a: Activity | null) => void;
   filter?: SportFilter;
+  mobileCollapsible?: boolean;
 }
 
 const PAGE_SIZE = 16;
@@ -31,10 +32,12 @@ export function ActivityLog({
   setYear,
   selectedActivity,
   onSelectActivity,
+  mobileCollapsible = false,
 }: ActivityLogProps) {
   const { t, locale } = useLocale();
   const [page, setPage] = useState(0);
   const [distFilter, setDistFilter] = useState<DistanceFilter>('all');
+  const [mobileExpanded, setMobileExpanded] = useState(false);
 
   const sorted = useMemo(() => {
     const filtered = activities.filter((a) => {
@@ -79,18 +82,38 @@ export function ActivityLog({
 
   return (
     <div
+      id={mobileCollapsible ? 'activity-log-details' : undefined}
       aria-label={t('activityLog')}
       role="region"
-      className="activity-log-card rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-4 sm:p-6"
+      className={`activity-log-card rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-4 sm:p-6 ${mobileCollapsible && !mobileExpanded ? 'mobile-collapsed' : ''}`}
     >
       {/* Header */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-bold">{t('activityLog')}</h2>
-        <span className="text-sm text-[var(--color-muted)]">
-          {t('showing')} {sorted.length ? page * PAGE_SIZE + 1 : 0}-
-          {Math.min((page + 1) * PAGE_SIZE, sorted.length)} {t('of')}{' '}
-          {sorted.length}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-[var(--color-muted)]">
+            {t('showing')} {sorted.length ? page * PAGE_SIZE + 1 : 0}-
+            {Math.min((page + 1) * PAGE_SIZE, sorted.length)} {t('of')}{' '}
+            {sorted.length}
+          </span>
+          {mobileCollapsible && (
+            <button
+              type="button"
+              aria-expanded={mobileExpanded}
+              aria-controls="activity-log-details"
+              onClick={() => setMobileExpanded((expanded) => !expanded)}
+              className="rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-muted)] lg:hidden"
+            >
+              {mobileExpanded
+                ? locale === 'zh'
+                  ? '收起'
+                  : 'Collapse'
+                : locale === 'zh'
+                  ? '展开'
+                  : 'Expand'}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Year tabs */}
