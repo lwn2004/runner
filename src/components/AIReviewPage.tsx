@@ -6,9 +6,9 @@ interface ReportEntry {
 }
 
 const INDEX_URL =
-  'https://raw.githubusercontent.com/lwn2004/coros_run/master/public/data/summary/index.json';
+  '/data/summary/index.json';
 const REPORT_BASE =
-  'https://raw.githubusercontent.com/lwn2004/coros_run/master/public/data/summary/';
+  '/data/summary/';
 
 function escapeHtml(value: string) {
   return value.replace(
