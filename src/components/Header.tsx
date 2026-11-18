@@ -119,14 +119,16 @@ export function Header({ page, onNavigate, mobileHome = false }: HeaderProps) {
               type="button"
               key={item.page}
               onClick={() => onNavigate(item.page)}
-              className={`${mobileHome ? 'mobile-home-nav-button ' : ''}cursor-pointer border-0 bg-transparent p-0 text-sm transition-colors ${
+              className={`${mobileHome ? 'mobile-home-nav-button' : ''}cursor-pointer border-0 bg-transparent p-0 text-sm transition-colors ${
                 item.page === page
                   ? 'font-medium text-[var(--color-accent)]'
                   : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
               }`}
             >
               {mobileHome && <NavigationIcon page={item.page} />}
-              <span className="mobile-home-nav-desktop-label">{item.label}</span>
+              <span className="mobile-home-nav-desktop-label">
+                {item.label}
+              </span>
               {mobileHome && (
                 <span className="mobile-home-nav-mobile-label">
                   {item.mobileLabel}
