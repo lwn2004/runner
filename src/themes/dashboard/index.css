@@ -162,8 +162,8 @@ body {
     padding: 6px 4px;
   }
 
-  .mobile-home-brand,
-  .mobile-home-nav-desktop-label {
+  .mobile-home-header .mobile-home-brand,
+  .mobile-home-header .mobile-home-nav-desktop-label {
     display: none;
   }
 
