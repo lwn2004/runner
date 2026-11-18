@@ -153,7 +153,7 @@ export function ActivityLog({
             </button>
           ))}
         </div>
-  
+
         {/* Distance filter */}
         <div
           role="group"
@@ -182,7 +182,7 @@ export function ActivityLog({
             </button>
           ))}
         </div>
-  
+
         <p className="table-scroll-hint mb-2 text-xs text-[var(--color-muted)]">
           {locale === 'zh'
             ? '左右滑动查看更多数据，点击记录查看路线'
@@ -268,7 +268,7 @@ export function ActivityLog({
             </tbody>
           </table>
         </div>
-  
+
         {/* Pagination */}
         <div className="mt-4 flex items-center justify-between border-t border-[var(--color-border)] pt-4">
           <button
