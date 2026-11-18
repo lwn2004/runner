@@ -62,14 +62,13 @@ function Dashboard() {
   const routeSectionRef = useRef<HTMLDivElement>(null);
   const activities = getActivityData() as Activity[];
   const { dark } = useTheme();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const [filter] = useState('all' as const);
   const [year, setYear] = useState<number | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
     null
   );
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
-  const [activityLogExpanded, setActivityLogExpanded] = useState(false);
   const [page, setPage] = useState<Page>(pageFromPath);
 
   useEffect(() => {
@@ -191,44 +190,20 @@ function Dashboard() {
                   />
                 </div>
                 <div className="order-4 lg:order-none">
-                  <div className="mb-3 flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-4 lg:hidden">
-                    <h2 className="text-lg font-bold">{t('activityLog')}</h2>
-                    <button
-                      type="button"
-                      aria-expanded={activityLogExpanded}
-                      aria-controls="mobile-activity-log-content"
-                      onClick={() =>
-                        setActivityLogExpanded((expanded) => !expanded)
-                      }
-                      className="rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-muted)] hover:bg-[var(--color-bg)] hover:text-[var(--color-text)]"
-                    >
-                      {activityLogExpanded
-                        ? locale === 'zh'
-                          ? '收起'
-                          : 'Collapse'
-                        : locale === 'zh'
-                          ? '展开'
-                          : 'Expand'}
-                    </button>
-                  </div>
-                  <div
-                    id="mobile-activity-log-content"
-                    className={activityLogExpanded ? 'block' : 'hidden lg:block'}
-                  >
-                    <ActivityLog
-                      activities={filtered}
-                      years={years}
-                      year={year}
-                      setYear={(value) => {
-                        setYear(value);
-                        setSelectedActivity(null);
-                        setSelectedProvince(null);
-                      }}
-                      selectedActivity={selectedActivity}
-                      onSelectActivity={selectActivity}
-                      filter={filter}
-                    />
-                  </div>
+                  <ActivityLog
+                    activities={filtered}
+                    years={years}
+                    year={year}
+                    setYear={(value) => {
+                      setYear(value);
+                      setSelectedActivity(null);
+                      setSelectedProvince(null);
+                    }}
+                    selectedActivity={selectedActivity}
+                    onSelectActivity={selectActivity}
+                    filter={filter}
+                    mobileCollapsible
+                  />
                 </div>
               </div>
               <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-6 lg:overflow-hidden">
