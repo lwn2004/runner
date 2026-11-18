@@ -261,7 +261,9 @@ export function ActivityLog({
                     {formatPace(a.average_speed)}
                   </td>
                   <td className="py-3 text-[var(--color-muted)]">
-                    {a.average_heartrate ? Math.round(a.average_heartrate) : '--'}
+                    {a.average_heartrate
+                      ? Math.round(a.average_heartrate)
+                      : '--'}
                   </td>
                 </tr>
               ))}
