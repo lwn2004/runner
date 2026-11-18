@@ -136,7 +136,7 @@ function Dashboard() {
       className="dashboard min-h-screen bg-[var(--color-bg)]"
       data-filter={filter}
     >
-      <Header page={page} onNavigate={navigate} />
+      <Header page={page} onNavigate={navigate} mobileHome={page === 'home'} />
       <Suspense
         fallback={
           <main
@@ -169,7 +169,7 @@ function Dashboard() {
             onBack={() => navigate('home')}
           />
         ) : (
-          <main className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 sm:py-6">
+          <main className="mobile-home-main mx-auto max-w-[1400px] px-4 py-5 sm:px-6 sm:py-6">
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_380px]">
               <div className="contents lg:block lg:min-w-0 lg:space-y-6 lg:overflow-hidden">
                 <div className="hidden lg:block">
