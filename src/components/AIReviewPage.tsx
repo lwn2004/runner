@@ -5,10 +5,8 @@ interface ReportEntry {
   report: string;
 }
 
-const INDEX_URL =
-  '/data/summary/index.json';
-const REPORT_BASE =
-  '/data/summary/';
+const INDEX_URL = '/data/summary/index.json';
+const REPORT_BASE = '/data/summary/';
 
 function escapeHtml(value: string) {
   return value.replace(
@@ -174,7 +172,7 @@ export function AIReviewPage() {
     const controller = new AbortController();
     setLoadingReport(true);
     setMarkdown('');
-    fetch(new URL(reports[selected].report, REPORT_BASE), {
+    fetch(`${REPORT_BASE}${reports[selected].report}`, {
       signal: controller.signal,
       cache: 'no-cache',
     })
