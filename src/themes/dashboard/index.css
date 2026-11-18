@@ -119,7 +119,6 @@ body {
   content-visibility: visible;
 }
 
-
 /* Mobile-only homepage card order and compact presentation. */
 @media (max-width: 1023px) {
   .mobile-home-profile-card > div > div:nth-child(2) {
