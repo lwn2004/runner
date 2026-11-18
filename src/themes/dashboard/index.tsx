@@ -62,13 +62,14 @@ function Dashboard() {
   const routeSectionRef = useRef<HTMLDivElement>(null);
   const activities = getActivityData() as Activity[];
   const { dark } = useTheme();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [filter] = useState('all' as const);
   const [year, setYear] = useState<number | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
     null
   );
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
+  const [activityLogExpanded, setActivityLogExpanded] = useState(false);
   const [page, setPage] = useState<Page>(pageFromPath);
 
   useEffect(() => {
@@ -171,43 +172,81 @@ function Dashboard() {
         ) : (
           <main className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 sm:py-6">
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_380px]">
-              <div className="min-w-0 space-y-6 overflow-hidden">
-                <StatsCards
-                  activities={filtered}
-                  allActivities={activities}
-                  year={year}
-                  filter={filter}
-                  onSelectActivity={selectActivity}
-                />
-                <ContributionHeatmap
-                  activities={activities}
-                  year={heatmapYear}
-                  filter={filter}
-                  onSelectActivity={selectActivity}
-                />
-                <ActivityLog
-                  activities={filtered}
-                  years={years}
-                  year={year}
-                  setYear={(value) => {
-                    setYear(value);
-                    setSelectedActivity(null);
-                    setSelectedProvince(null);
-                  }}
-                  selectedActivity={selectedActivity}
-                  onSelectActivity={selectActivity}
-                  filter={filter}
-                />
+              <div className="contents lg:block lg:min-w-0 lg:space-y-6 lg:overflow-hidden">
+                <div className="hidden lg:block">
+                  <StatsCards
+                    activities={filtered}
+                    allActivities={activities}
+                    year={year}
+                    filter={filter}
+                    onSelectActivity={selectActivity}
+                  />
+                </div>
+                <div className="hidden lg:block">
+                  <ContributionHeatmap
+                    activities={activities}
+                    year={heatmapYear}
+                    filter={filter}
+                    onSelectActivity={selectActivity}
+                  />
+                </div>
+                <div className="order-4 lg:order-none">
+                  <div className="mb-3 flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-4 lg:hidden">
+                    <h2 className="text-lg font-bold">{t('activityLog')}</h2>
+                    <button
+                      type="button"
+                      aria-expanded={activityLogExpanded}
+                      aria-controls="mobile-activity-log-content"
+                      onClick={() =>
+                        setActivityLogExpanded((expanded) => !expanded)
+                      }
+                      className="rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-muted)] hover:bg-[var(--color-bg)] hover:text-[var(--color-text)]"
+                    >
+                      {activityLogExpanded
+                        ? locale === 'zh'
+                          ? '收起'
+                          : 'Collapse'
+                        : locale === 'zh'
+                          ? '展开'
+                          : 'Expand'}
+                    </button>
+                  </div>
+                  <div
+                    id="mobile-activity-log-content"
+                    className={activityLogExpanded ? 'block' : 'hidden lg:block'}
+                  >
+                    <ActivityLog
+                      activities={filtered}
+                      years={years}
+                      year={year}
+                      setYear={(value) => {
+                        setYear(value);
+                        setSelectedActivity(null);
+                        setSelectedProvince(null);
+                      }}
+                      selectedActivity={selectedActivity}
+                      onSelectActivity={selectActivity}
+                      filter={filter}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="flex min-w-0 flex-col gap-6 overflow-hidden">
-                <ProfileCard activities={activities} filter={filter} />
-                <ChinaMap
-                  activities={filtered}
-                  filter={filter}
-                  selectedProvince={selectedProvince}
-                  onSelectProvince={selectProvince}
-                />
-                <div ref={routeSectionRef} className="scroll-mt-28">
+              <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-6 lg:overflow-hidden">
+                <div className="mobile-home-profile-card order-1 lg:order-none">
+                  <ProfileCard activities={activities} filter={filter} />
+                </div>
+                <div className="hidden lg:block">
+                  <ChinaMap
+                    activities={filtered}
+                    filter={filter}
+                    selectedProvince={selectedProvince}
+                    onSelectProvince={selectProvince}
+                  />
+                </div>
+                <div
+                  ref={routeSectionRef}
+                  className="mobile-home-route-map order-2 scroll-mt-28 lg:order-none"
+                >
                   <RouteMap
                     activities={provinceFiltered}
                     allActivities={activities}
@@ -216,16 +255,20 @@ function Dashboard() {
                     onClearSelection={() => setSelectedActivity(null)}
                   />
                 </div>
-                <PersonalBest
-                  activities={activities}
-                  onSelectActivity={selectActivity}
-                />
-                <CalendarWidget
-                  key={year ?? 'all'}
-                  selectedActivity={selectedActivity}
-                  activities={filtered}
-                  onSelectActivity={selectActivity}
-                />
+                <div className="hidden lg:block">
+                  <PersonalBest
+                    activities={activities}
+                    onSelectActivity={selectActivity}
+                  />
+                </div>
+                <div className="order-3 lg:order-none">
+                  <CalendarWidget
+                    key={year ?? 'all'}
+                    selectedActivity={selectedActivity}
+                    activities={filtered}
+                    onSelectActivity={selectActivity}
+                  />
+                </div>
               </div>
             </div>
           </main>
