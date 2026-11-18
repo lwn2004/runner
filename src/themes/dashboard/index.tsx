@@ -136,7 +136,7 @@ function Dashboard() {
       className="dashboard min-h-screen bg-[var(--color-bg)]"
       data-filter={filter}
     >
-      <Header page={page} onNavigate={navigate} mobileHome={page === 'home'} />
+      <Header page={page} onNavigate={navigate} mobileHome />
       <Suspense
         fallback={
           <main
