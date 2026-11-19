@@ -125,10 +125,6 @@ body {
     display: none;
   }
 
-  .mobile-home-profile-card > div > div:nth-child(2) {
-    display: none;
-  }
-
   .mobile-home-route-map .route-map-header,
   .mobile-home-route-map .route-map-footer,
   .mobile-home-route-map .route-map > p {
