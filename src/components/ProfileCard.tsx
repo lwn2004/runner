@@ -224,12 +224,12 @@ export const ProfileCard = memo(function ProfileCard({
           <p className="text-xs text-[var(--color-muted)]">
             {locale === 'zh' ? '月跑量' : 'Month'}
           </p>
-          <p className="whitespace-nowrap font-mono text-lg font-bold">
+          <p className="font-mono text-lg font-bold whitespace-nowrap">
             {goal.unit === 'time'
               ? formatHours(monthSeconds)
               : formatDistance(monthDistance)}
           </p>
-          <p className="mt-1 whitespace-nowrap text-[10px] leading-snug text-[var(--color-muted)]">
+          <p className="mt-1 text-[10px] leading-snug whitespace-nowrap text-[var(--color-muted)]">
             {locale === 'zh' ? '目标' : 'Goal'}{' '}
             {goal.unit === 'time'
               ? `${Math.round(goal.monthly / 60)}h`
