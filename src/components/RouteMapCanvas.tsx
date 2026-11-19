@@ -162,6 +162,7 @@ export function RouteMapCanvas({
       style: { version: 8, sources: {}, layers: [] },
       center: [121.4, 31.2],
       zoom: 10,
+      attributionControl: false,      
       ...cameraRef.current,
       locale: zh
         ? {
@@ -180,11 +181,11 @@ export function RouteMapCanvas({
     map.addControl(
       new mapboxgl.FullscreenControl({ container: panelRef.current }),
       'top-right'
-    );
+    );/*
     map.addControl(
       new mapboxgl.ScaleControl({ unit: 'metric', maxWidth: 90 }),
       'bottom-left'
-    );
+    );*/
     const observer = new ResizeObserver(() => map.resize());
     observer.observe(containerRef.current);
     return () => {
