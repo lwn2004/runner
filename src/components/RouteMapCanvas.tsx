@@ -177,7 +177,7 @@ export function RouteMapCanvas({
         : {},
     });
     mapRef.current = map;
-    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    //map.addControl(new mapboxgl.NavigationControl(), 'top-right');
     map.addControl(
       new mapboxgl.FullscreenControl({ container: panelRef.current }),
       'top-right'
