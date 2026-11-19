@@ -64,11 +64,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Inspect profile card formatting
-        run: |
-          pnpm exec prettier src/components/ProfileCard.tsx > /tmp/ProfileCard.tsx
-          diff -u src/components/ProfileCard.tsx /tmp/ProfileCard.tsx || true
-
       - name: Run check and build
         run: |
           pnpm run check
