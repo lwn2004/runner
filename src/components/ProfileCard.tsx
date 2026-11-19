@@ -211,7 +211,9 @@ export const ProfileCard = memo(function ProfileCard({
           </p>
           <p className="mt-1 whitespace-nowrap text-[10px] leading-snug text-[var(--color-muted)]">
             {locale === 'zh' ? '目标' : 'Goal'}{' '}
-            {goal.unit === 'time' ? `${Math.round(goal.yearly / 60)}h` : `${goal.yearly} km`}
+            {goal.unit === 'time'
+              ? `${Math.round(goal.yearly / 60)}h`
+              : `${goal.yearly} km`}
           </p>
         </div>
         <div className="min-w-0">
@@ -225,7 +227,9 @@ export const ProfileCard = memo(function ProfileCard({
           </p>
           <p className="mt-1 whitespace-nowrap text-[10px] leading-snug text-[var(--color-muted)]">
             {locale === 'zh' ? '目标' : 'Goal'}{' '}
-            {goal.unit === 'time' ? `${Math.round(goal.monthly / 60)}h` : `${goal.monthly} km`}
+            {goal.unit === 'time'
+              ? `${Math.round(goal.monthly / 60)}h`
+              : `${goal.monthly} km`}
           </p>
         </div>
       </div>
