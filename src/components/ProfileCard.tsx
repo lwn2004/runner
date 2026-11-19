@@ -188,28 +188,32 @@ export const ProfileCard = memo(function ProfileCard({
           <p className="text-xs text-[var(--color-muted)]">
             {locale === 'zh' ? '总跑量' : 'Total Distance'}
           </p>
-          <p className="whitespace-nowrap font-mono text-xl font-bold">
+          <p className="font-mono text-xl font-bold whitespace-nowrap">
             {formatDistance(totalDistance)}
             <span className="ml-0.5 text-xs font-normal text-[var(--color-muted)]">
               km
             </span>
           </p>
           <p className="mt-1 flex flex-wrap items-center gap-x-1 text-[10px] leading-snug text-[var(--color-muted)]">
-            <span>{countries.size} {t('countries')}</span>
+            <span>
+              {countries.size} {t('countries')}
+            </span>
             <span>·</span>
-            <span>{provinces.size} {t('provinces')}</span>
+            <span>
+              {provinces.size} {t('provinces')}
+            </span>
           </p>
         </div>
         <div className="min-w-0 border-x border-[var(--color-border)] px-1">
           <p className="text-xs text-[var(--color-muted)]">
             {locale === 'zh' ? '年跑量' : 'Year'}
           </p>
-          <p className="whitespace-nowrap font-mono text-lg font-bold">
+          <p className="font-mono text-lg font-bold whitespace-nowrap">
             {goal.unit === 'time'
               ? formatHours(yearSeconds)
               : formatDistance(yearDistance)}
           </p>
-          <p className="mt-1 whitespace-nowrap text-[10px] leading-snug text-[var(--color-muted)]">
+          <p className="mt-1 text-[10px] leading-snug whitespace-nowrap text-[var(--color-muted)]">
             {locale === 'zh' ? '目标' : 'Goal'}{' '}
             {goal.unit === 'time'
               ? `${Math.round(goal.yearly / 60)}h`
