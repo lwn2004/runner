@@ -96,7 +96,7 @@ export const ProfileCard = memo(function ProfileCard({
   const [nextTraining, setNextTraining] = useState<NextTrainingData | null>(
     null
   );
-  const [isScheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [weatherByDate, setWeatherByDate] = useState<
     Record<string, WeatherDay>
   >({});
@@ -129,11 +129,7 @@ export const ProfileCard = memo(function ProfileCard({
 
     const workouts = nextTraining?.workouts ?? [];
     const dates = workouts.map((workout) => workout.date).sort();
-    if (dates.length === 0) {
-      setWeatherByDate({});
-      setWeatherStatus('loaded');
-      return;
-    }
+    if (dates.length === 0) return;
 
     const controller = new AbortController();
     const params = new URLSearchParams({
@@ -145,9 +141,6 @@ export const ProfileCard = memo(function ProfileCard({
       start_date: dates[0],
       end_date: dates[dates.length - 1],
     });
-
-    setWeatherByDate({});
-    setWeatherStatus('loading');
 
     fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`, {
       signal: controller.signal,
@@ -181,7 +174,7 @@ export const ProfileCard = memo(function ProfileCard({
     if (!isScheduleModalOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setScheduleModalOpen(false);
+      if (event.key === 'Escape') setIsScheduleModalOpen(false);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -512,7 +505,11 @@ export const ProfileCard = memo(function ProfileCard({
       {nextWorkout && (
         <button
           type="button"
-          onClick={() => setScheduleModalOpen(true)}
+          onClick={() => {
+            setWeatherByDate({});
+            setWeatherStatus('loading');
+            setIsScheduleModalOpen(true);
+          }}
           aria-haspopup="dialog"
           className="mt-2 flex w-full items-center justify-between gap-3 rounded-lg text-left transition-colors hover:text-[var(--color-accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)] lg:block"
         >
@@ -602,7 +599,9 @@ export const ProfileCard = memo(function ProfileCard({
                           {locale === 'zh' ? '负荷' : 'Load'}
                         </th>
                         <th className="min-w-[170px] px-3 py-3 font-medium">
-                          {locale === 'zh' ? '广州天气 / 气温' : 'Guangzhou Weather'}
+                          {locale === 'zh'
+                            ? '广州天气 / 气温'
+                            : 'Guangzhou Weather'}
                         </th>
                       </tr>
                     </thead>
@@ -636,13 +635,13 @@ export const ProfileCard = memo(function ProfileCard({
                               key={`${workout.date}-${workout.name}`}
                               className="border-b border-[var(--color-border)]/70 last:border-0"
                             >
-                              <td className="whitespace-nowrap px-3 py-4 font-medium">
+                              <td className="px-3 py-4 font-medium whitespace-nowrap">
                                 {formatScheduledDate(workout.date)}
                               </td>
                               <td className="px-3 py-4 font-medium">
                                 {workout.name || '—'}
                               </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-[var(--color-muted)]">
+                              <td className="px-3 py-4 whitespace-nowrap text-[var(--color-muted)]">
                                 {workout.sport_type === 'cycling'
                                   ? locale === 'zh'
                                     ? '骑行'
@@ -653,7 +652,7 @@ export const ProfileCard = memo(function ProfileCard({
                                       : 'Running'
                                     : workout.sport_type || '—'}
                               </td>
-                              <td className="whitespace-nowrap px-3 py-4 tabular-nums">
+                              <td className="px-3 py-4 whitespace-nowrap tabular-nums">
                                 {workout.distance_km != null
                                   ? `${workout.distance_km} km`
                                   : '—'}
@@ -671,7 +670,9 @@ export const ProfileCard = memo(function ProfileCard({
                                   </span>
                                 ) : weatherStatus === 'error' ? (
                                   <span className="text-[var(--color-muted)]">
-                                    {locale === 'zh' ? '天气获取失败' : 'Unavailable'}
+                                    {locale === 'zh'
+                                      ? '天气获取失败'
+                                      : 'Unavailable'}
                                   </span>
                                 ) : description || temperature ? (
                                   <span className="flex flex-col gap-1">
@@ -684,7 +685,9 @@ export const ProfileCard = memo(function ProfileCard({
                                   </span>
                                 ) : (
                                   <span className="text-[var(--color-muted)]">
-                                    {locale === 'zh' ? '暂无预报' : 'No forecast'}
+                                    {locale === 'zh'
+                                      ? '暂无预报'
+                                      : 'No forecast'}
                                   </span>
                                 )}
                               </td>
@@ -696,7 +699,9 @@ export const ProfileCard = memo(function ProfileCard({
                 </div>
               ) : (
                 <p className="py-10 text-center text-sm text-[var(--color-muted)]">
-                  {locale === 'zh' ? '这周暂无训练安排' : 'No workouts scheduled'}
+                  {locale === 'zh'
+                    ? '这周暂无训练安排'
+                    : 'No workouts scheduled'}
                 </p>
               )}
             </div>
