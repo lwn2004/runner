@@ -38,7 +38,7 @@
     "serve": "vite serve",
     "preview": "vite preview",
     "lint": "eslint src --ext .ts,.tsx --fix",
-    "check": "prettier --write src/components/ProfileCard.tsx && git diff -- src/components/ProfileCard.tsx && prettier --check \"src/main.tsx\" \"src/**/*.{css,module.css,json,ts,tsx}\" \"*.{yaml,json,ts}\" \"assets/index.tsx\" \"eslint.config.mjs\"",
+    "check": "prettier --check \"src/main.tsx\" \"src/**/*.{css,module.css,json,ts,tsx}\" \"*.{yaml,json,ts}\" \"assets/index.tsx\" \"eslint.config.mjs\"",
     "format": "prettier --write \"src/main.tsx\" \"src/**/*.{css,module.css,json,ts,tsx}\" \"*.{yaml,json,ts}\" \"assets/index.tsx\" \"eslint.config.mjs\"",
     "ci": "pnpm run format && pnpm run lint && pnpm run build"
   },
