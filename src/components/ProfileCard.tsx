@@ -135,6 +135,7 @@ export const ProfileCard = memo(function ProfileCard({
       latitude: '23.1291',
       longitude: '113.2644',
       daily: 'weather_code,temperature_2m_max,temperature_2m_min',
+      forecast_days: '16',
       timezone: 'Asia/Shanghai',
       start_date: dates[0],
       end_date: dates[dates.length - 1],
