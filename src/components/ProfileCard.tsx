@@ -40,7 +40,9 @@ interface OpenMeteoResponse {
   };
 }
 
-const WEATHER_CODES: Record<number, { zh: string; en: string; icon: string }> = {
+type WeatherDescription = { zh: string; en: string; icon: string };
+
+const WEATHER_CODES: Record<number, WeatherDescription> = {
   0: { zh: '晴', en: 'Clear sky', icon: '☀️' },
   1: { zh: '大部晴朗', en: 'Mainly clear', icon: '🌤️' },
   2: { zh: '多云', en: 'Partly cloudy', icon: '⛅' },
@@ -74,8 +76,11 @@ const WEATHER_CODES: Record<number, { zh: string; en: string; icon: string }> = 
 function getWeatherDescription(code: number | null, locale: string) {
   if (code == null) return null;
   const description = WEATHER_CODES[code];
-  if (!description) return locale === 'zh' ? '天气状况未知' : 'Unknown conditions';
-  return `${description.icon} ${locale === 'zh' ? description.zh : description.en}`;
+  if (!description) {
+    return locale === 'zh' ? '天气状况未知' : 'Unknown conditions';
+  }
+  const label = locale === 'zh' ? description.zh : description.en;
+  return `${description.icon} ${label}`;
 }
 
 interface ProfileCardProps {
@@ -271,6 +276,7 @@ export const ProfileCard = memo(function ProfileCard({
   };
 
   const formatHours = (secs: number) => `${(secs / 3600).toFixed(1)}h`;
+  const updatedLabel = locale === 'zh' ? '数据更新' : 'Updated';
 
   const latest =
     activities.length > 0
@@ -557,7 +563,7 @@ export const ProfileCard = memo(function ProfileCard({
                     ? `${nextTraining.week_start} – ${nextTraining.week_end}`
                     : ''}
                   {nextTraining?.generated_at
-                    ? ` · ${locale === 'zh' ? '数据更新' : 'Updated'} ${nextTraining.generated_at}`
+                    ? ` · ${updatedLabel} ${nextTraining.generated_at}`
                     : ''}
                 </p>
               </div>
