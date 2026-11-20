@@ -5,7 +5,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 import type { Activity } from '@/types';
@@ -59,7 +58,6 @@ const pageFromPath = (): Page => {
 };
 
 function Dashboard() {
-  const routeSectionRef = useRef<HTMLDivElement>(null);
   const activities = getActivityData() as Activity[];
   const { dark } = useTheme();
   const { t } = useLocale();
@@ -109,17 +107,6 @@ function Dashboard() {
       setSelectedActivity(activity);
       if (activity) {
         setSelectedProvince(null);
-        if (window.matchMedia('(max-width: 1023px)').matches) {
-          requestAnimationFrame(() =>
-            routeSectionRef.current?.scrollIntoView({
-              block: 'start',
-              behavior: window.matchMedia('(prefers-reduced-motion: reduce)')
-                .matches
-                ? 'instant'
-                : 'smooth',
-            })
-          );
-        }
         if (
           year !== null &&
           new Date(activity.start_date_local).getFullYear() !== year
@@ -218,10 +205,7 @@ function Dashboard() {
                     onSelectProvince={selectProvince}
                   />
                 </div>
-                <div
-                  ref={routeSectionRef}
-                  className="mobile-home-route-map order-2 scroll-mt-28 lg:order-none"
-                >
+                <div className="mobile-home-route-map order-2 lg:order-none">
                   <RouteMap
                     activities={provinceFiltered}
                     allActivities={activities}
