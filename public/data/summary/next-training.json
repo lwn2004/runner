@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "week_start": "2026-11-23",
+  "week_end": "2026-11-29",
+  "workouts": [
+    {
+      "date": "2026-11-24",
+      "name": "轻松跑",
+      "sport_type": "running",
+      "distance_km": 11,
+      "estimated_time": "1:10:55",
+      "load": 83
+    },
+    {
+      "date": "2026-11-26",
+      "name": "马拉松配速跑",
+      "sport_type": "running",
+      "distance_km": 12,
+      "estimated_time": "1:05:19",
+      "load": 125
+    },
+    {
+      "date": "2026-11-28",
+      "name": "专项长距离",
+      "sport_type": "running",
+      "distance_km": 29,
+      "estimated_time": "2:50:36",
+      "load": 264
+    },
+    {
+      "date": "2026-11-29",
+      "name": "恢复跑",
+      "sport_type": "running",
+      "distance_km": 8,
+      "estimated_time": "54:44",
+      "load": 53
+    }
+  ]
+}

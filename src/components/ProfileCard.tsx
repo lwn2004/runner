@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import type { Activity, SportFilter } from '../types';
 import { useLocale } from '../hooks/useLocale';
 import {
@@ -7,6 +7,18 @@ import {
   extractProvince,
 } from '../hooks/useActivities';
 import { AVATAR, GOALS, DEFAULT_GOAL } from '../config';
+
+interface ScheduledWorkout {
+  date: string;
+  name: string;
+  sport_type?: string;
+  distance_km?: number;
+  estimated_time?: string;
+}
+
+interface NextTrainingData {
+  workouts?: ScheduledWorkout[];
+}
 
 interface ProfileCardProps {
   activities: Activity[];
@@ -18,6 +30,40 @@ export const ProfileCard = memo(function ProfileCard({
   filter = 'all',
 }: ProfileCardProps) {
   const { t, locale } = useLocale();
+  const [nextTraining, setNextTraining] = useState<NextTrainingData | null>(
+    null
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch(`${import.meta.env.BASE_URL}data/summary/next-training.json`)
+      .then((response) => {
+        if (!response.ok) throw new Error('Unable to load next training');
+        return response.json() as Promise<NextTrainingData>;
+      })
+      .then((data) => {
+        if (!cancelled) setNextTraining(data);
+      })
+      .catch(() => {
+        if (!cancelled) setNextTraining(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const shanghaiToday = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+  const nextWorkout =
+    nextTraining?.workouts
+      ?.filter((workout) => workout.date >= shanghaiToday)
+      .sort((a, b) => a.date.localeCompare(b.date))[0] ?? null;
 
   // Filter activities by sport type for distance/count/time
   const filteredActivities =
@@ -84,6 +130,17 @@ export const ProfileCard = memo(function ProfileCard({
     const p = extractProvince(loc);
     if (p) provinces.add(p);
   }
+
+  const formatScheduledDate = (dateString: string) => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+    if (locale === 'zh') {
+      const weekdayNames = ['日', '一', '二', '三', '四', '五', '六'];
+      return `${month}月${day}日（周${weekdayNames[weekday]}）`;
+    }
+    const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return `${weekdayNames[weekday]}, ${month}/${day}`;
+  };
 
   const formatHours = (secs: number) => `${(secs / 3600).toFixed(1)}h`;
 
@@ -312,6 +369,29 @@ export const ProfileCard = memo(function ProfileCard({
               {' '}
               · {formatDistance(latest.distance)} km ·{' '}
               {formatDate(latest.start_date_local)}
+            </span>
+          </p>
+        </div>
+      )}
+
+      {/* Next Scheduled Workout */}
+      {nextWorkout && (
+        <div className="mt-2 flex items-center justify-between gap-3 lg:block">
+          <p className="shrink-0 text-xs text-[var(--color-muted)] lg:mb-1">
+            {locale === 'zh' ? '下次安排' : 'Next Workout'}
+          </p>
+          <p className="min-w-0 flex-1 truncate text-right text-sm font-medium lg:text-left">
+            {nextWorkout.sport_type === 'cycling' ? '🚴 ' : '🏃 '}
+            {formatScheduledDate(nextWorkout.date)}
+            <span className="font-normal text-[var(--color-muted)]">
+              {' · '}
+              {nextWorkout.name}
+              {nextWorkout.distance_km != null
+                ? ` · ${nextWorkout.distance_km} km`
+                : ''}
+              {nextWorkout.estimated_time
+                ? ` · ${nextWorkout.estimated_time}`
+                : ''}
             </span>
           </p>
         </div>
