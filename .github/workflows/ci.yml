@@ -64,11 +64,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Inspect mobile map CSS formatting
-        run: |
-          pnpm exec prettier src/components/RouteMap.css > /tmp/RouteMap.css
-          diff -u src/components/RouteMap.css /tmp/RouteMap.css || true
-
       - name: Run check and build
         run: |
           pnpm run check
