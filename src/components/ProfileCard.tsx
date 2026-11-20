@@ -65,7 +65,6 @@ export const ProfileCard = memo(function ProfileCard({
       ?.filter((workout) => workout.date >= shanghaiToday)
       .sort((a, b) => a.date.localeCompare(b.date))[0] ?? null;
 
-
   // Filter activities by sport type for distance/count/time
   const filteredActivities =
     filter === 'all' ? activities : activities.filter((a) => a.type === filter);
