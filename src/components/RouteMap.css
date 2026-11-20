@@ -88,10 +88,6 @@
     left: auto;
   }
 
-  .route-map .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-logo {
-    margin-right: -4px;
-    margin-left: 0;
-  }
 }
 
 .route-map-empty {
