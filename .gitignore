@@ -10,8 +10,8 @@ yarn-error.log
 /dist
 .DS_Store
 .sass-cache/
-_posts/
-_site/
+/_posts/
+/_site/
 
 .mypy_cache
 
@@ -26,3 +26,7 @@ route.png
 route.svg
 
 .env
+
+# Cloudflare Workers
+.wrangler
+.dev.vars*
