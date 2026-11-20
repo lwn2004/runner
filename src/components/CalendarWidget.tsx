@@ -67,6 +67,11 @@ export function CalendarWidget({
   const offset = (month.getDay() + 6) % 7;
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
   const dayActivities = day === null ? [] : (byDay.get(day) ?? []);
+  const toggleActivity = (activity: Activity) => {
+    onSelectActivity(
+      selectedActivity?.run_id === activity.run_id ? null : activity
+    );
+  };
   const moveMonth = (delta: number) => {
     setMonth(new Date(year, monthIndex + delta, 1));
     setDay(null);
@@ -148,7 +153,7 @@ export function CalendarWidget({
               className={`calendar-day relative flex h-9 flex-col items-center justify-center rounded-md text-xs ${list.length ? 'bg-[var(--color-accent)]/15 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/30' : 'text-[var(--color-muted)]'} ${day === number ? 'ring-2 ring-[var(--color-accent)]' : ''}`}
               onClick={() => {
                 setDay(number);
-                if (list.length === 1) onSelectActivity(list[0]);
+                if (list.length === 1) toggleActivity(list[0]);
               }}
             >
               <span>{number}</span>
@@ -172,7 +177,7 @@ export function CalendarWidget({
               key={activity.run_id}
               aria-pressed={selectedActivity?.run_id === activity.run_id}
               className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-2 text-left text-xs hover:bg-[var(--color-bg)] aria-pressed:bg-[var(--color-accent)]/10"
-              onClick={() => onSelectActivity(activity)}
+              onClick={() => toggleActivity(activity)}
             >
               <span className="min-w-0 truncate">
                 {activity.start_date_local.slice(11, 16)} · {activity.name}
