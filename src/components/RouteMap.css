@@ -77,6 +77,23 @@
 .dark .route-map .mapboxgl-ctrl-icon {
   filter: invert(1);
 }
+/* Keep map controls compact on mobile: hide fullscreen and move the logo right. */
+@media (max-width: 1023px) {
+  .route-map .mapboxgl-ctrl-top-right .mapboxgl-ctrl-group:has(.mapboxgl-ctrl-fullscreen) {
+    display: none;
+  }
+
+  .route-map .mapboxgl-ctrl-bottom-left {
+    right: 0;
+    left: auto;
+  }
+
+  .route-map .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-logo {
+    margin-right: -4px;
+    margin-left: 0;
+  }
+}
+
 .route-map-empty {
   position: absolute;
   inset: 0;
