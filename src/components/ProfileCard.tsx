@@ -538,7 +538,7 @@ export const ProfileCard = memo(function ProfileCard({
       {isScheduleModalOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-3 sm:p-6"
-          onClick={() => setScheduleModalOpen(false)}
+          onClick={() => setIsScheduleModalOpen(false)}
         >
           <section
             role="dialog"
@@ -567,7 +567,7 @@ export const ProfileCard = memo(function ProfileCard({
               <button
                 type="button"
                 aria-label={locale === 'zh' ? '关闭' : 'Close'}
-                onClick={() => setScheduleModalOpen(false)}
+                onClick={() => setIsScheduleModalOpen(false)}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-[var(--color-muted)] hover:bg-[var(--color-border)] hover:text-[var(--color-text)]"
               >
                 ×
@@ -657,10 +657,10 @@ export const ProfileCard = memo(function ProfileCard({
                                   ? `${workout.distance_km} km`
                                   : '—'}
                               </td>
-                              <td className="whitespace-nowrap px-3 py-4 tabular-nums">
+                              <td className="px-3 py-4 whitespace-nowrap tabular-nums">
                                 {workout.estimated_time || '—'}
                               </td>
-                              <td className="whitespace-nowrap px-3 py-4 tabular-nums">
+                              <td className="px-3 py-4 whitespace-nowrap tabular-nums">
                                 {workout.load ?? '—'}
                               </td>
                               <td className="px-3 py-4">
