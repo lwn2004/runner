@@ -8,6 +8,21 @@ import {
 } from '../hooks/useActivities';
 import { AVATAR, GOALS, DEFAULT_GOAL } from '../config';
 
+interface WorkoutSegment {
+  section_type?: number;
+  target_type?: number;
+  target_value?: number;
+  intensity_type?: number;
+  section_intensity?: number;
+  intensity_percent_start?: number;
+  intensity_percent_end?: number;
+  intensity_value_start?: number;
+  intensity_value_end?: number;
+  interval_group?: boolean;
+  repeats?: number;
+  sets?: WorkoutSegment[];
+}
+
 interface ScheduledWorkout {
   date: string;
   name: string;
@@ -15,6 +30,8 @@ interface ScheduledWorkout {
   distance_km?: number;
   estimated_time?: string;
   load?: number;
+  course_description?: string;
+  sections?: WorkoutSegment[];
 }
 
 interface NextTrainingData {
@@ -81,6 +98,105 @@ function getWeatherDescription(code: number | null, locale: string) {
   }
   const label = locale === 'zh' ? description.zh : description.en;
   return `${description.icon} ${label}`;
+}
+
+function getSegmentTypeLabel(type: number | undefined, locale: string) {
+  const labels: Record<number, { zh: string; en: string }> = {
+    1: { zh: '热身', en: 'Warm-up' },
+    2: { zh: '训练', en: 'Work' },
+    3: { zh: '恢复', en: 'Recovery' },
+    4: { zh: '放松', en: 'Cooldown' },
+  };
+  if (type == null) return locale === 'zh' ? '分段' : 'Segment';
+  const label = labels[type];
+  return label
+    ? locale === 'zh'
+      ? label.zh
+      : label.en
+    : locale === 'zh'
+      ? '分段'
+      : 'Segment';
+}
+
+function formatSegmentTarget(segment: WorkoutSegment, locale: string) {
+  const value = segment.target_value;
+  switch (segment.target_type) {
+    case 1:
+      if (value == null) return null;
+      return value >= 1000
+        ? `${Number((value / 1000).toFixed(1))} km`
+        : `${value} m`;
+    case 2:
+      if (value == null) return null;
+      return value >= 3600
+        ? `${Math.floor(value / 3600)}:${String(Math.floor((value % 3600) / 60)).padStart(2, '0')} h`
+        : `${Math.floor(value / 60)} min${value % 60 ? ` ${value % 60}s` : ''}`;
+    case 3:
+      return value == null
+        ? null
+        : `${value} m ${locale === 'zh' ? '爬升' : 'climb'}`;
+    case 4:
+      return locale === 'zh' ? '自由模式' : 'Open';
+    default:
+      return null;
+  }
+}
+
+function formatPace(secondsPerKm: number) {
+  const seconds = Math.round(secondsPerKm);
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}/km`;
+}
+
+function formatSegmentIntensity(segment: WorkoutSegment, locale: string) {
+  if (segment.section_intensity != null) {
+    return `Z${segment.section_intensity}`;
+  }
+
+  const metricLabels: Record<number, { zh: string; en: string }> = {
+    1: { zh: '心率', en: 'HR' },
+    2: { zh: '配速', en: 'Pace' },
+    3: { zh: '等强配速', en: 'Effort pace' },
+    4: { zh: '功率', en: 'Power' },
+  };
+  const metric =
+    segment.intensity_type == null
+      ? null
+      : metricLabels[segment.intensity_type];
+  const metricLabel = metric ? (locale === 'zh' ? metric.zh : metric.en) : null;
+
+  let range: string | null = null;
+  if (
+    segment.intensity_percent_start != null &&
+    segment.intensity_percent_end != null
+  ) {
+    range = `${segment.intensity_percent_start}–${segment.intensity_percent_end}%`;
+  } else if (
+    segment.intensity_value_start != null &&
+    segment.intensity_value_end != null
+  ) {
+    const start = segment.intensity_value_start;
+    const end = segment.intensity_value_end;
+    const formatValue =
+      segment.intensity_type === 2
+        ? formatPace
+        : (value: number) => String(value);
+    range =
+      start === end
+        ? formatValue(start)
+        : `${formatValue(start)}–${formatValue(end)}`;
+    if (segment.intensity_type === 1) range += ' bpm';
+    if (segment.intensity_type === 4) range += ' W';
+  }
+
+  if (metricLabel && range) return `${metricLabel} ${range}`;
+  if (range) return range;
+  return null;
+}
+
+function formatSegmentSummary(segment: WorkoutSegment, locale: string) {
+  const target = formatSegmentTarget(segment, locale);
+  const intensity = formatSegmentIntensity(segment, locale);
+  return [target, intensity].filter(Boolean).join(' · ');
 }
 
 interface ProfileCardProps {
@@ -575,7 +691,7 @@ export const ProfileCard = memo(function ProfileCard({
             <div className="overflow-auto p-3 sm:p-5">
               {(nextTraining?.workouts ?? []).length > 0 ? (
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+                  <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
                     <thead>
                       <tr className="border-b border-[var(--color-border)] text-xs text-[var(--color-muted)]">
                         <th className="px-3 py-3 font-medium">
@@ -583,6 +699,9 @@ export const ProfileCard = memo(function ProfileCard({
                         </th>
                         <th className="px-3 py-3 font-medium">
                           {locale === 'zh' ? '训练内容' : 'Workout'}
+                        </th>
+                        <th className="min-w-[290px] px-3 py-3 font-medium">
+                          {locale === 'zh' ? '分段训练' : 'Workout Segments'}
                         </th>
                         <th className="px-3 py-3 font-medium">
                           {locale === 'zh' ? '类型' : 'Type'}
@@ -638,6 +757,96 @@ export const ProfileCard = memo(function ProfileCard({
                               </td>
                               <td className="px-3 py-4 font-medium">
                                 {workout.name || '—'}
+                              </td>
+                              <td className="px-3 py-4">
+                                <div className="min-w-[270px] space-y-2">
+                                  {workout.course_description && (
+                                    <p className="text-xs leading-relaxed text-[var(--color-muted)]">
+                                      {workout.course_description}
+                                    </p>
+                                  )}
+                                  {workout.sections?.length ? (
+                                    <div className="space-y-2">
+                                      {workout.sections.map(
+                                        (segment, index) => (
+                                          <div
+                                            key={`${workout.date}-segment-${index}`}
+                                            className="rounded-md bg-[var(--color-border)]/30 px-2 py-1.5"
+                                          >
+                                            {segment.interval_group ? (
+                                              <>
+                                                <p className="text-xs font-medium">
+                                                  {locale === 'zh'
+                                                    ? '间歇组'
+                                                    : 'Intervals'}
+                                                  {segment.repeats != null
+                                                    ? ` × ${segment.repeats}`
+                                                    : ''}
+                                                </p>
+                                                {segment.sets?.length ? (
+                                                  <div className="mt-1 space-y-1 border-l border-[var(--color-border)] pl-2">
+                                                    {segment.sets.map(
+                                                      (member, memberIndex) => (
+                                                        <div
+                                                          key={`${workout.date}-segment-${index}-set-${memberIndex}`}
+                                                          className="text-xs"
+                                                        >
+                                                          <span className="font-medium">
+                                                            {getSegmentTypeLabel(
+                                                              member.section_type,
+                                                              locale
+                                                            )}
+                                                          </span>
+                                                          {formatSegmentSummary(
+                                                            member,
+                                                            locale
+                                                          ) && (
+                                                            <span className="ml-2 text-[var(--color-muted)]">
+                                                              {formatSegmentSummary(
+                                                                member,
+                                                                locale
+                                                              )}
+                                                            </span>
+                                                          )}
+                                                        </div>
+                                                      )
+                                                    )}
+                                                  </div>
+                                                ) : null}
+                                              </>
+                                            ) : (
+                                              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs">
+                                                <span className="font-medium">
+                                                  {getSegmentTypeLabel(
+                                                    segment.section_type,
+                                                    locale
+                                                  )}
+                                                </span>
+                                                {formatSegmentSummary(
+                                                  segment,
+                                                  locale
+                                                ) && (
+                                                  <span className="text-[var(--color-muted)]">
+                                                    {formatSegmentSummary(
+                                                      segment,
+                                                      locale
+                                                    )}
+                                                  </span>
+                                                )}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <span className="text-xs text-[var(--color-muted)]">
+                                      {locale === 'zh'
+                                        ? '暂无分段详情'
+                                        : 'No segment details'}
+                                    </span>
+                                  )}
+                                </div>
                               </td>
                               <td className="px-3 py-4 whitespace-nowrap text-[var(--color-muted)]">
                                 {workout.sport_type === 'cycling'
