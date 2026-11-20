@@ -110,8 +110,12 @@ function getSegmentTypeLabel(type: number | undefined, locale: string) {
   if (type == null) return locale === 'zh' ? '分段' : 'Segment';
   const label = labels[type];
   return label
-    ? locale === 'zh' ? label.zh : label.en
-    : locale === 'zh' ? '分段' : 'Segment';
+    ? locale === 'zh'
+      ? label.zh
+      : label.en
+    : locale === 'zh'
+      ? '分段'
+      : 'Segment';
 }
 
 function formatSegmentTarget(segment: WorkoutSegment, locale: string) {
@@ -128,7 +132,9 @@ function formatSegmentTarget(segment: WorkoutSegment, locale: string) {
         ? `${Math.floor(value / 3600)}:${String(Math.floor((value % 3600) / 60)).padStart(2, '0')} h`
         : `${Math.floor(value / 60)} min${value % 60 ? ` ${value % 60}s` : ''}`;
     case 3:
-      return value == null ? null : `${value} m ${locale === 'zh' ? '爬升' : 'climb'}`;
+      return value == null
+        ? null
+        : `${value} m ${locale === 'zh' ? '爬升' : 'climb'}`;
     case 4:
       return locale === 'zh' ? '自由模式' : 'Open';
     default:
@@ -152,12 +158,11 @@ function formatSegmentIntensity(segment: WorkoutSegment, locale: string) {
     3: { zh: '等强配速', en: 'Effort pace' },
     4: { zh: '功率', en: 'Power' },
   };
-  const metric = segment.intensity_type == null
-    ? null
-    : metricLabels[segment.intensity_type];
-  const metricLabel = metric
-    ? locale === 'zh' ? metric.zh : metric.en
-    : null;
+  const metric =
+    segment.intensity_type == null
+      ? null
+      : metricLabels[segment.intensity_type];
+  const metricLabel = metric ? (locale === 'zh' ? metric.zh : metric.en) : null;
 
   let range: string | null = null;
   if (
@@ -171,12 +176,14 @@ function formatSegmentIntensity(segment: WorkoutSegment, locale: string) {
   ) {
     const start = segment.intensity_value_start;
     const end = segment.intensity_value_end;
-    const formatValue = segment.intensity_type === 2
-      ? formatPace
-      : (value: number) => String(value);
-    range = start === end
-      ? formatValue(start)
-      : `${formatValue(start)}–${formatValue(end)}`;
+    const formatValue =
+      segment.intensity_type === 2
+        ? formatPace
+        : (value: number) => String(value);
+    range =
+      start === end
+        ? formatValue(start)
+        : `${formatValue(start)}–${formatValue(end)}`;
     if (segment.intensity_type === 1) range += ' bpm';
     if (segment.intensity_type === 4) range += ' W';
   }
@@ -760,57 +767,83 @@ export const ProfileCard = memo(function ProfileCard({
                                   )}
                                   {workout.sections?.length ? (
                                     <div className="space-y-2">
-                                      {workout.sections.map((segment, index) => (
-                                        <div
-                                          key={`${workout.date}-segment-${index}`}
-                                          className="rounded-md bg-[var(--color-border)]/30 px-2 py-1.5"
-                                        >
-                                          {segment.interval_group ? (
-                                            <>
-                                              <p className="text-xs font-medium">
-                                                {locale === 'zh' ? '间歇组' : 'Intervals'}
-                                                {segment.repeats != null
-                                                  ? ` × ${segment.repeats}`
-                                                  : ''}
-                                              </p>
-                                              {segment.sets?.length ? (
-                                                <div className="mt-1 space-y-1 border-l border-[var(--color-border)] pl-2">
-                                                  {segment.sets.map((member, memberIndex) => (
-                                                    <div
-                                                      key={`${workout.date}-segment-${index}-set-${memberIndex}`}
-                                                      className="text-xs"
-                                                    >
-                                                      <span className="font-medium">
-                                                        {getSegmentTypeLabel(member.section_type, locale)}
-                                                      </span>
-                                                      {formatSegmentSummary(member, locale) && (
-                                                        <span className="ml-2 text-[var(--color-muted)]">
-                                                          {formatSegmentSummary(member, locale)}
-                                                        </span>
-                                                      )}
-                                                    </div>
-                                                  ))}
-                                                </div>
-                                              ) : null}
-                                            </>
-                                          ) : (
-                                            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs">
-                                              <span className="font-medium">
-                                                {getSegmentTypeLabel(segment.section_type, locale)}
-                                              </span>
-                                              {formatSegmentSummary(segment, locale) && (
-                                                <span className="text-[var(--color-muted)]">
-                                                  {formatSegmentSummary(segment, locale)}
+                                      {workout.sections.map(
+                                        (segment, index) => (
+                                          <div
+                                            key={`${workout.date}-segment-${index}`}
+                                            className="rounded-md bg-[var(--color-border)]/30 px-2 py-1.5"
+                                          >
+                                            {segment.interval_group ? (
+                                              <>
+                                                <p className="text-xs font-medium">
+                                                  {locale === 'zh'
+                                                    ? '间歇组'
+                                                    : 'Intervals'}
+                                                  {segment.repeats != null
+                                                    ? ` × ${segment.repeats}`
+                                                    : ''}
+                                                </p>
+                                                {segment.sets?.length ? (
+                                                  <div className="mt-1 space-y-1 border-l border-[var(--color-border)] pl-2">
+                                                    {segment.sets.map(
+                                                      (member, memberIndex) => (
+                                                        <div
+                                                          key={`${workout.date}-segment-${index}-set-${memberIndex}`}
+                                                          className="text-xs"
+                                                        >
+                                                          <span className="font-medium">
+                                                            {getSegmentTypeLabel(
+                                                              member.section_type,
+                                                              locale
+                                                            )}
+                                                          </span>
+                                                          {formatSegmentSummary(
+                                                            member,
+                                                            locale
+                                                          ) && (
+                                                            <span className="ml-2 text-[var(--color-muted)]">
+                                                              {formatSegmentSummary(
+                                                                member,
+                                                                locale
+                                                              )}
+                                                            </span>
+                                                          )}
+                                                        </div>
+                                                      )
+                                                    )}
+                                                  </div>
+                                                ) : null}
+                                              </>
+                                            ) : (
+                                              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs">
+                                                <span className="font-medium">
+                                                  {getSegmentTypeLabel(
+                                                    segment.section_type,
+                                                    locale
+                                                  )}
                                                 </span>
-                                              )}
-                                            </div>
-                                          )}
-                                        </div>
-                                      ))}
+                                                {formatSegmentSummary(
+                                                  segment,
+                                                  locale
+                                                ) && (
+                                                  <span className="text-[var(--color-muted)]">
+                                                    {formatSegmentSummary(
+                                                      segment,
+                                                      locale
+                                                    )}
+                                                  </span>
+                                                )}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )
+                                      )}
                                     </div>
                                   ) : (
                                     <span className="text-xs text-[var(--color-muted)]">
-                                      {locale === 'zh' ? '暂无分段详情' : 'No segment details'}
+                                      {locale === 'zh'
+                                        ? '暂无分段详情'
+                                        : 'No segment details'}
                                     </span>
                                   )}
                                 </div>
