@@ -14,10 +14,73 @@ interface ScheduledWorkout {
   sport_type?: string;
   distance_km?: number;
   estimated_time?: string;
+  load?: number;
 }
 
 interface NextTrainingData {
+  generated_at?: string;
+  timezone?: string;
+  week_start?: string;
+  week_end?: string;
   workouts?: ScheduledWorkout[];
+}
+
+interface WeatherDay {
+  weatherCode: number | null;
+  temperatureMax: number | null;
+  temperatureMin: number | null;
+}
+
+interface OpenMeteoResponse {
+  daily?: {
+    time: string[];
+    weather_code?: (number | null)[];
+    temperature_2m_max?: (number | null)[];
+    temperature_2m_min?: (number | null)[];
+  };
+}
+
+type WeatherDescription = { zh: string; en: string; icon: string };
+
+const WEATHER_CODES: Record<number, WeatherDescription> = {
+  0: { zh: '晴', en: 'Clear sky', icon: '☀️' },
+  1: { zh: '大部晴朗', en: 'Mainly clear', icon: '🌤️' },
+  2: { zh: '多云', en: 'Partly cloudy', icon: '⛅' },
+  3: { zh: '阴天', en: 'Overcast', icon: '☁️' },
+  45: { zh: '有雾', en: 'Fog', icon: '🌫️' },
+  48: { zh: '雾凇', en: 'Depositing rime fog', icon: '🌫️' },
+  51: { zh: '毛毛雨', en: 'Light drizzle', icon: '🌦️' },
+  53: { zh: '中等毛毛雨', en: 'Moderate drizzle', icon: '🌦️' },
+  55: { zh: '强毛毛雨', en: 'Dense drizzle', icon: '🌧️' },
+  56: { zh: '冻毛毛雨', en: 'Freezing drizzle', icon: '🌧️' },
+  57: { zh: '强冻毛毛雨', en: 'Dense freezing drizzle', icon: '🌧️' },
+  61: { zh: '小雨', en: 'Slight rain', icon: '🌧️' },
+  63: { zh: '中雨', en: 'Moderate rain', icon: '🌧️' },
+  65: { zh: '大雨', en: 'Heavy rain', icon: '🌧️' },
+  66: { zh: '冻雨', en: 'Freezing rain', icon: '🌧️' },
+  67: { zh: '强冻雨', en: 'Heavy freezing rain', icon: '🌧️' },
+  71: { zh: '小雪', en: 'Slight snow', icon: '🌨️' },
+  73: { zh: '中雪', en: 'Moderate snow', icon: '🌨️' },
+  75: { zh: '大雪', en: 'Heavy snow', icon: '❄️' },
+  77: { zh: '雪粒', en: 'Snow grains', icon: '🌨️' },
+  80: { zh: '小阵雨', en: 'Slight rain showers', icon: '🌦️' },
+  81: { zh: '中等阵雨', en: 'Moderate rain showers', icon: '🌧️' },
+  82: { zh: '强阵雨', en: 'Violent rain showers', icon: '⛈️' },
+  85: { zh: '小阵雪', en: 'Slight snow showers', icon: '🌨️' },
+  86: { zh: '强阵雪', en: 'Heavy snow showers', icon: '❄️' },
+  95: { zh: '雷雨', en: 'Thunderstorm', icon: '⛈️' },
+  96: { zh: '雷雨伴冰雹', en: 'Thunderstorm with hail', icon: '⛈️' },
+  99: { zh: '强雷雨伴冰雹', en: 'Heavy thunderstorm with hail', icon: '⛈️' },
+};
+
+function getWeatherDescription(code: number | null, locale: string) {
+  if (code == null) return null;
+  const description = WEATHER_CODES[code];
+  if (!description) {
+    return locale === 'zh' ? '天气状况未知' : 'Unknown conditions';
+  }
+  const label = locale === 'zh' ? description.zh : description.en;
+  return `${description.icon} ${label}`;
 }
 
 interface ProfileCardProps {
@@ -33,6 +96,13 @@ export const ProfileCard = memo(function ProfileCard({
   const [nextTraining, setNextTraining] = useState<NextTrainingData | null>(
     null
   );
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [weatherByDate, setWeatherByDate] = useState<
+    Record<string, WeatherDay>
+  >({});
+  const [weatherStatus, setWeatherStatus] = useState<
+    'idle' | 'loading' | 'loaded' | 'error'
+  >('idle');
 
   useEffect(() => {
     let cancelled = false;
@@ -53,6 +123,62 @@ export const ProfileCard = memo(function ProfileCard({
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!isScheduleModalOpen) return;
+
+    const workouts = nextTraining?.workouts ?? [];
+    const dates = workouts.map((workout) => workout.date).sort();
+    if (dates.length === 0) return;
+
+    const controller = new AbortController();
+    const params = new URLSearchParams({
+      latitude: '23.1291',
+      longitude: '113.2644',
+      daily: 'weather_code,temperature_2m_max,temperature_2m_min',
+      forecast_days: '16',
+      timezone: 'Asia/Shanghai',
+      start_date: dates[0],
+      end_date: dates[dates.length - 1],
+    });
+
+    fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`, {
+      signal: controller.signal,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Unable to load Guangzhou weather');
+        return response.json() as Promise<OpenMeteoResponse>;
+      })
+      .then((data) => {
+        const daily = data.daily;
+        const weather: Record<string, WeatherDay> = {};
+        daily?.time?.forEach((date, index) => {
+          weather[date] = {
+            weatherCode: daily.weather_code?.[index] ?? null,
+            temperatureMax: daily.temperature_2m_max?.[index] ?? null,
+            temperatureMin: daily.temperature_2m_min?.[index] ?? null,
+          };
+        });
+        setWeatherByDate(weather);
+        setWeatherStatus('loaded');
+      })
+      .catch((error: unknown) => {
+        if (error instanceof Error && error.name === 'AbortError') return;
+        setWeatherStatus('error');
+      });
+
+    return () => controller.abort();
+  }, [isScheduleModalOpen, nextTraining]);
+
+  useEffect(() => {
+    if (!isScheduleModalOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsScheduleModalOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isScheduleModalOpen]);
 
   const shanghaiToday = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Shanghai',
@@ -143,6 +269,7 @@ export const ProfileCard = memo(function ProfileCard({
   };
 
   const formatHours = (secs: number) => `${(secs / 3600).toFixed(1)}h`;
+  const updatedLabel = locale === 'zh' ? '数据更新' : 'Updated';
 
   const latest =
     activities.length > 0
@@ -363,7 +490,6 @@ export const ProfileCard = memo(function ProfileCard({
             {locale === 'zh' ? '最近活动' : 'Latest Activity'}
           </p>
           <p className="min-w-0 flex-1 truncate text-right text-sm font-medium lg:text-left">
-            {latest.type === 'Run' ? '🏃 ' : '🚴 '}
             {latest.name || (latest.type === 'Run' ? 'Run' : 'Ride')}
             <span className="font-normal text-[var(--color-muted)]">
               {' '}
@@ -376,12 +502,20 @@ export const ProfileCard = memo(function ProfileCard({
 
       {/* Next Scheduled Workout */}
       {nextWorkout && (
-        <div className="mt-2 flex items-center justify-between gap-3 lg:block">
-          <p className="shrink-0 text-xs text-[var(--color-muted)] lg:mb-1">
+        <button
+          type="button"
+          onClick={() => {
+            setWeatherByDate({});
+            setWeatherStatus('loading');
+            setIsScheduleModalOpen(true);
+          }}
+          aria-haspopup="dialog"
+          className="mt-2 flex w-full items-center justify-between gap-3 rounded-lg text-left transition-colors hover:text-[var(--color-accent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)] lg:block"
+        >
+          <span className="shrink-0 text-xs text-[var(--color-muted)] lg:mb-1">
             {locale === 'zh' ? '下次安排' : 'Next Workout'}
-          </p>
-          <p className="min-w-0 flex-1 truncate text-right text-sm font-medium lg:text-left">
-            {nextWorkout.sport_type === 'cycling' ? '🚴 ' : '🏃 '}
+          </span>
+          <span className="min-w-0 flex-1 truncate text-right text-sm font-medium lg:text-left">
             {formatScheduledDate(nextWorkout.date)}
             <span className="font-normal text-[var(--color-muted)]">
               {' · '}
@@ -393,7 +527,189 @@ export const ProfileCard = memo(function ProfileCard({
                 ? ` · ${nextWorkout.estimated_time}`
                 : ''}
             </span>
-          </p>
+            <span className="ml-2 text-xs text-[var(--color-accent)]">↗</span>
+          </span>
+        </button>
+      )}
+
+      {/* Weekly workout and weather modal */}
+      {isScheduleModalOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-3 sm:p-6"
+          onClick={() => setIsScheduleModalOpen(false)}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="next-training-modal-title"
+            className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="flex items-start justify-between gap-4 border-b border-[var(--color-border)] px-4 py-4 sm:px-6">
+              <div className="min-w-0">
+                <h2
+                  id="next-training-modal-title"
+                  className="text-lg font-semibold"
+                >
+                  {locale === 'zh' ? '下一周训练安排' : 'Upcoming Workouts'}
+                </h2>
+                <p className="mt-1 text-sm text-[var(--color-muted)]">
+                  {nextTraining?.week_start && nextTraining?.week_end
+                    ? `${nextTraining.week_start} – ${nextTraining.week_end}`
+                    : ''}
+                  {nextTraining?.generated_at
+                    ? ` · ${updatedLabel} ${nextTraining.generated_at}`
+                    : ''}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label={locale === 'zh' ? '关闭' : 'Close'}
+                onClick={() => setIsScheduleModalOpen(false)}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl text-[var(--color-muted)] hover:bg-[var(--color-border)] hover:text-[var(--color-text)]"
+              >
+                ×
+              </button>
+            </header>
+
+            <div className="overflow-auto p-3 sm:p-5">
+              {(nextTraining?.workouts ?? []).length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-[var(--color-border)] text-xs text-[var(--color-muted)]">
+                        <th className="px-3 py-3 font-medium">
+                          {locale === 'zh' ? '日期' : 'Date'}
+                        </th>
+                        <th className="px-3 py-3 font-medium">
+                          {locale === 'zh' ? '训练内容' : 'Workout'}
+                        </th>
+                        <th className="px-3 py-3 font-medium">
+                          {locale === 'zh' ? '类型' : 'Type'}
+                        </th>
+                        <th className="px-3 py-3 font-medium">
+                          {locale === 'zh' ? '距离' : 'Distance'}
+                        </th>
+                        <th className="px-3 py-3 font-medium">
+                          {locale === 'zh' ? '预计用时' : 'Est. Time'}
+                        </th>
+                        <th className="px-3 py-3 font-medium">
+                          {locale === 'zh' ? '负荷' : 'Load'}
+                        </th>
+                        <th className="min-w-[170px] px-3 py-3 font-medium">
+                          {locale === 'zh'
+                            ? '广州天气 / 气温'
+                            : 'Guangzhou Weather'}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...(nextTraining?.workouts ?? [])]
+                        .sort((a, b) => a.date.localeCompare(b.date))
+                        .map((workout) => {
+                          const weather = weatherByDate[workout.date];
+                          const description = getWeatherDescription(
+                            weather?.weatherCode ?? null,
+                            locale
+                          );
+                          const hasTemperature =
+                            weather?.temperatureMax != null ||
+                            weather?.temperatureMin != null;
+                          const temperature = hasTemperature
+                            ? [
+                                weather?.temperatureMin != null
+                                  ? `${Math.round(weather.temperatureMin)}°`
+                                  : null,
+                                weather?.temperatureMax != null
+                                  ? `${Math.round(weather.temperatureMax)}°`
+                                  : null,
+                              ]
+                                .filter(Boolean)
+                                .join(' – ') + 'C'
+                            : null;
+
+                          return (
+                            <tr
+                              key={`${workout.date}-${workout.name}`}
+                              className="border-b border-[var(--color-border)]/70 last:border-0"
+                            >
+                              <td className="px-3 py-4 font-medium whitespace-nowrap">
+                                {formatScheduledDate(workout.date)}
+                              </td>
+                              <td className="px-3 py-4 font-medium">
+                                {workout.name || '—'}
+                              </td>
+                              <td className="px-3 py-4 whitespace-nowrap text-[var(--color-muted)]">
+                                {workout.sport_type === 'cycling'
+                                  ? locale === 'zh'
+                                    ? '骑行'
+                                    : 'Cycling'
+                                  : workout.sport_type === 'running'
+                                    ? locale === 'zh'
+                                      ? '跑步'
+                                      : 'Running'
+                                    : workout.sport_type || '—'}
+                              </td>
+                              <td className="px-3 py-4 whitespace-nowrap tabular-nums">
+                                {workout.distance_km != null
+                                  ? `${workout.distance_km} km`
+                                  : '—'}
+                              </td>
+                              <td className="px-3 py-4 whitespace-nowrap tabular-nums">
+                                {workout.estimated_time || '—'}
+                              </td>
+                              <td className="px-3 py-4 whitespace-nowrap tabular-nums">
+                                {workout.load ?? '—'}
+                              </td>
+                              <td className="px-3 py-4">
+                                {weatherStatus === 'loading' ? (
+                                  <span className="text-[var(--color-muted)]">
+                                    {locale === 'zh' ? '查询中…' : 'Loading…'}
+                                  </span>
+                                ) : weatherStatus === 'error' ? (
+                                  <span className="text-[var(--color-muted)]">
+                                    {locale === 'zh'
+                                      ? '天气获取失败'
+                                      : 'Unavailable'}
+                                  </span>
+                                ) : description || temperature ? (
+                                  <span className="flex flex-col gap-1">
+                                    {description && <span>{description}</span>}
+                                    {temperature && (
+                                      <span className="text-xs text-[var(--color-muted)]">
+                                        {temperature}
+                                      </span>
+                                    )}
+                                  </span>
+                                ) : (
+                                  <span className="text-[var(--color-muted)]">
+                                    {locale === 'zh'
+                                      ? '暂无预报'
+                                      : 'No forecast'}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="py-10 text-center text-sm text-[var(--color-muted)]">
+                  {locale === 'zh'
+                    ? '这周暂无训练安排'
+                    : 'No workouts scheduled'}
+                </p>
+              )}
+            </div>
+
+            <footer className="border-t border-[var(--color-border)] px-4 py-3 text-xs text-[var(--color-muted)] sm:px-6">
+              {locale === 'zh'
+                ? '天气数据：Open-Meteo · 广州市（日最高 / 最低气温）'
+                : 'Weather: Open-Meteo · Guangzhou (daily high / low)'}
+            </footer>
+          </section>
         </div>
       )}
     </div>
