@@ -490,7 +490,6 @@ export const ProfileCard = memo(function ProfileCard({
             {locale === 'zh' ? '最近活动' : 'Latest Activity'}
           </p>
           <p className="min-w-0 flex-1 truncate text-right text-sm font-medium lg:text-left">
-            {latest.type === 'Run' ? '🏃 ' : '🚴 '}
             {latest.name || (latest.type === 'Run' ? 'Run' : 'Ride')}
             <span className="font-normal text-[var(--color-muted)]">
               {' '}
@@ -517,7 +516,6 @@ export const ProfileCard = memo(function ProfileCard({
             {locale === 'zh' ? '下次安排' : 'Next Workout'}
           </span>
           <span className="min-w-0 flex-1 truncate text-right text-sm font-medium lg:text-left">
-            {nextWorkout.sport_type === 'cycling' ? '🚴 ' : '🏃 '}
             {formatScheduledDate(nextWorkout.date)}
             <span className="font-normal text-[var(--color-muted)]">
               {' · '}
