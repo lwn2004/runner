@@ -79,7 +79,9 @@
 }
 /* Keep map controls compact on mobile: hide fullscreen and move the logo right. */
 @media (max-width: 1023px) {
-  .route-map .mapboxgl-ctrl-top-right .mapboxgl-ctrl-group:has(.mapboxgl-ctrl-fullscreen) {
+  .route-map
+    .mapboxgl-ctrl-top-right
+    .mapboxgl-ctrl-group:has(.mapboxgl-ctrl-fullscreen) {
     display: none;
   }
 
