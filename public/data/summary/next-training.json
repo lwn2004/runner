@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-20",
+  "generated_at": "2026-11-22",
   "timezone": "Asia/Shanghai",
   "week_start": "2026-11-23",
   "week_end": "2026-11-29",
@@ -10,7 +10,18 @@
       "sport_type": "running",
       "distance_km": 11,
       "estimated_time": "1:10:55",
-      "load": 83
+      "load": 83,
+      "course_description": "11 km轻松跑，心率125–140 bpm；结束后完成4×100 m轻快加速跑，充分恢复。",
+      "sections": [
+        {
+          "section_type": 2,
+          "target_type": 1,
+          "target_value": 11000,
+          "intensity_type": 1,
+          "intensity_value_start": 125,
+          "intensity_value_end": 140
+        }
+      ]
     },
     {
       "date": "2026-11-26",
@@ -18,7 +29,34 @@
       "sport_type": "running",
       "distance_km": 12,
       "estimated_time": "1:05:19",
-      "load": 125
+      "load": 125,
+      "course_description": "2 km热身，8 km马拉松配速（4:55–4:58/km），2 km放松跑。",
+      "sections": [
+        {
+          "section_type": 1,
+          "target_type": 1,
+          "target_value": 2000,
+          "intensity_type": 1,
+          "intensity_value_start": 125,
+          "intensity_value_end": 140
+        },
+        {
+          "section_type": 2,
+          "target_type": 1,
+          "target_value": 8000,
+          "intensity_type": 2,
+          "intensity_value_start": 295,
+          "intensity_value_end": 298
+        },
+        {
+          "section_type": 4,
+          "target_type": 1,
+          "target_value": 2000,
+          "intensity_type": 1,
+          "intensity_value_start": 125,
+          "intensity_value_end": 140
+        }
+      ]
     },
     {
       "date": "2026-11-28",
@@ -26,7 +64,34 @@
       "sport_type": "running",
       "distance_km": 29,
       "estimated_time": "2:50:36",
-      "load": 264
+      "load": 264,
+      "course_description": "29 km专项长距离：前20 km轻松跑，随后8 km马拉松配速（4:55–4:58/km），最后1 km放松。若心率或体感明显失控，取消MP段，改为轻松跑。",
+      "sections": [
+        {
+          "section_type": 2,
+          "target_type": 1,
+          "target_value": 20000,
+          "intensity_type": 1,
+          "intensity_value_start": 125,
+          "intensity_value_end": 145
+        },
+        {
+          "section_type": 2,
+          "target_type": 1,
+          "target_value": 8000,
+          "intensity_type": 2,
+          "intensity_value_start": 295,
+          "intensity_value_end": 298
+        },
+        {
+          "section_type": 4,
+          "target_type": 1,
+          "target_value": 1000,
+          "intensity_type": 1,
+          "intensity_value_start": 125,
+          "intensity_value_end": 140
+        }
+      ]
     },
     {
       "date": "2026-11-29",
@@ -34,7 +99,18 @@
       "sport_type": "running",
       "distance_km": 8,
       "estimated_time": "54:44",
-      "load": 53
+      "load": 53,
+      "course_description": "轻松慢跑，控制心率在120–135 bpm，帮助恢复。",
+      "sections": [
+        {
+          "section_type": 2,
+          "target_type": 1,
+          "target_value": 8000,
+          "intensity_type": 1,
+          "intensity_value_start": 120,
+          "intensity_value_end": 135
+        }
+      ]
     }
   ]
 }
